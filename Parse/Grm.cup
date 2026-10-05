@@ -44,6 +44,11 @@ terminal COMMA, COLON, SEMICOLON, LPAREN, RPAREN, LBRACK, RBRACK,
   /*temp stand in for type name*/
   terminal TYPENAME;
 
+  /*C token for 3.3.5*/
+  terminal MOD;
+/*C tokent for 3.3.7*/
+  terminal LSHIFT, RSHIFT;
+
 non terminal Absyn.Exp          Exp;
 non terminal Absyn.Var          Var;
 
@@ -54,7 +59,15 @@ non terminal argument_expression_list;
 non terminal unary_expression;
 non terminal unary_operator;
 non terminal cast_expression;
+non terminal multiplication_expression;
+non terminal additive_exression;
+non terminal shift_expression;
+non terminal relational_expression;
+non terminal equality_expression;
+non terminal and_expression;
 non terminal type_name;
+non terminal conditional_expression;
+non terminal constant_expression;
 non terminal assignment_expression;
 non terminal expression;
 
@@ -118,15 +131,71 @@ unary_operator ::=
   | BANG
   ;
 
+/*3.3.4*/
+cast_expression ::=
+  unary_expression
+  ;
+
+
+/*3.3.5*/
+multiplication_expression ::= 
+  cast_expression
+  | multiplication_expression TIMES cast_expression
+  | multiplication_expression DIVIDE cast_expression
+  | multiplication_expression MOD cast_expression
+  ;
+
+/*3.3.6 additive_exression*/
+additive_exression ::=
+  multiplication_expression
+  | additive_exression PLUS multiplication_expression
+  | additive_exression MINUS multiplication_expression
+  ;
+
+/*3.3.7 bwise shift*/
+shift_expression ::=
+   additive_exression
+  | shift_expression LSHIFT additive_exression
+  | shift_expression RSHIFT additive_exression
+  ;
+
+
+/* 3.3.8 relaiton operatiors*/
+relational_expression ::= 
+  shift_expression
+  | relational_expression LT shift_expression
+  | relational_expression GT shift_expression
+  | relational_expression LE shift_expression
+  | relational_expression GE shift_expression
+  ;
+
+/*3.3.9 equality operatiors*/
+equality_expression ::=
+  relational_expression
+  | equality_expression EQ relational_expression
+  | equality_expression NEQ relational_expression
+  ;
+
+/*3.3.10 bwise and */
+and_expression ::= 
+  equality_expression
+  | and_expression AMP equality_expression
+  ;
+
+/*3.3.4 constant expressions*/
+ constant_expression ::=
+    conditional_expression
+    ;
 
   /* place holders needs to be taken out later*/
- cast_expression ::= unary_expression
-  ;
 
 type_name ::= TYPENAME
   ;
 
-assignment_expression ::= cast_expression
+  conditional_expression ::= and_expression
+    ;
+
+assignment_expression ::= conditional_expression
   ;
 
 expression ::= assignment_expression
