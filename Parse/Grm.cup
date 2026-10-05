@@ -49,6 +49,15 @@ terminal COMMA, COLON, SEMICOLON, LPAREN, RPAREN, LBRACK, RBRACK,
 /*C tokent for 3.3.7*/
   terminal LSHIFT, RSHIFT;
 
+  /*C tokens added for 3.3.11-3.3.14*/
+  terminal CARET, PIPE, ANDAND, OROR;
+
+  /* tokens for 3.3.15-3.3.16*/
+  terminal QUESTION;
+  terminal EQUALS, MUL_ASSIGN, DIV_ASSIGN, MOD_ASSIGN, ADD_ASSIGN, SUB_ASSIGN, 
+          LSHIFT_ASSIGN, RSHIFT_ASSIGN, AND_ASSIGN, XOR_ASSIGN, OR_ASSIGN;
+
+
 non terminal Absyn.Exp          Exp;
 non terminal Absyn.Var          Var;
 
@@ -65,12 +74,16 @@ non terminal shift_expression;
 non terminal relational_expression;
 non terminal equality_expression;
 non terminal and_expression;
-non terminal type_name;
+non terminal exclusive_or_expression;
+non terminal inclusive_or_expression;
+non terminal logical_and_expression;
+non terminal logical_or_expression;
 non terminal conditional_expression;
 non terminal constant_expression;
+non terminal assignment_operator;
 non terminal assignment_expression;
 non terminal expression;
-
+non terminal type_name;
 
 start with Exp;
 
@@ -182,6 +195,65 @@ and_expression ::=
   | and_expression AMP equality_expression
   ;
 
+/*3.3.11 bwise exclusice or operator*/
+exclusive_or_expression ::=
+  and_expression
+  | exclusive_or_expression CARET and_expression
+  ;
+
+/*3.3.12 logical and operatiors*/
+inclusive_or_expression ::=
+  exclusive_or_expression
+  | logical_or_expression PIPE inclusive_or_expression
+  ;
+
+
+/*3.3.13 logical and operator*/
+logical_and_expression ::=
+  inclusive_or_expression
+  | logical_and_expression ANDAND inclusive_or_expression
+  ;
+
+/*3.3.14 logical or */
+logical_or_expression ::=
+  logical_and_expression
+  | logical_or_expression OROR logical_or_expression
+  ;
+
+/*3.3.15 conditional operatiors*/
+conditional_expression ::=
+  logical_or_expression
+  | logical_or_expression QUESTION expression COLON conditional_expression
+  ;
+
+ /*3.3.16 assign ment operatiors*/
+ assignment_expression ::=
+    conditional_expression
+    | unary_expression assignment_operator assignment_expression
+    ; 
+
+assignment_operator ::=
+  EQUALS 
+  | MUL_ASSIGN
+  | DIV_ASSIGN 
+  | MOD_ASSIGN
+  | ADD_ASSIGN
+  | SUB_ASSIGN
+  | LSHIFT_ASSIGN
+  | RSHIFT_ASSIGN
+  | AND_ASSIGN
+  | XOR_ASSIGN
+  | OR_ASSIGN
+  ;
+
+/*3.3.17 comma */
+expression ::= 
+  assignment_expression
+  | expression COMMA assignment_expression
+  ;
+
+
+
 /*3.3.4 constant expressions*/
  constant_expression ::=
     conditional_expression
@@ -190,12 +262,6 @@ and_expression ::=
   /* place holders needs to be taken out later*/
 
 type_name ::= TYPENAME
-  ;
-
-  conditional_expression ::= and_expression
-    ;
-
-assignment_expression ::= conditional_expression
   ;
 
 expression ::= assignment_expression
