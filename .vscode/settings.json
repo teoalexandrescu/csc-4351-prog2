@@ -1,0 +1,10 @@
+{
+    "java.project.sourcePaths": [
+        "."
+    ],
+    "java.project.referencedLibraries": [
+        "/classes/cs4351/cs4351_bau/pub/classes/tools.jar",
+        "/classes/cs4351/cs4351_bau/pub/classes/chap2.jar",
+        "/classes/cs4351/cs4351_bau/pub/classes/chap4.jar"
+    ]
+}

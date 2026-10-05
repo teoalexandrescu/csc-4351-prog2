@@ -27,6 +27,8 @@ parser code  {:
 
 scan with {: return lexer.nextToken(); :};
 
+
+
 terminal String ID, STRING;
 terminal Integer INT;
 terminal COMMA, COLON, SEMICOLON, LPAREN, RPAREN, LBRACK, RBRACK, 
@@ -34,8 +36,28 @@ terminal COMMA, COLON, SEMICOLON, LPAREN, RPAREN, LBRACK, RBRACK,
 	GT, GE, AND, OR, ASSIGN, ARRAY, IF, THEN, ELSE, WHILE, FOR, TO,
 	DO, LET, IN, END, OF, BREAK, NIL, FUNCTION, VAR, TYPE;
 
+  /*C tokents added for 3.3.2*/
+  terminal ARROW, INCR, DECR;
+
+  /*C tokents for 3.3.3*/
+  terminal SIZEOF, AMP, TILDE, BANG;
+  /*temp stand in for type name*/
+  terminal TYPENAME;
+
 non terminal Absyn.Exp          Exp;
 non terminal Absyn.Var          Var;
+
+/* c grammor from c89*/
+non terminal primary_expression;
+non terminal postfix_expression;
+non terminal argument_expression_list;
+non terminal unary_expression;
+non terminal unary_operator;
+non terminal cast_expression;
+non terminal type_name;
+non terminal assignment_expression;
+non terminal expression;
+
 
 start with Exp;
 
@@ -48,3 +70,64 @@ Exp ::= error:e
 Var ::=   ID:n
 	  {: RESULT = new Absyn.SimpleVar(nleft, sym(n)); :}
 	;
+
+
+/*3.3.1 primary expressions*/
+primary_expression ::=
+  ID  /* identifier*/
+ |INT /* constant*/
+ | STRING /* string literal*/
+ | LPAREN expression RPAREN
+  ;
+
+
+/*3.3.2 postfix*/
+postfix_expression ::=
+  primary_expression
+|  postfix_expression LBRACK expression RBRACK
+|  postfix_expression LPAREN RPAREN
+|  postfix_expression LPAREN argument_expression_list RPAREN
+|  postfix_expression DOT ID
+|  postfix_expression ARROW ID
+|  postfix_expression INCR
+|  postfix_expression DECR
+  ;
+
+argument_expression_list ::=
+  assignment_expression
+ | argument_expression_list COMMA assignment_expression
+  ;
+
+
+/* 3.3.3 unary operatiors*/
+unary_expression ::=
+  postfix_expression
+  | INCR unary_expression
+  | DECR unary_expression
+  | unary_operator cast_expression
+  | SIZEOF unary_expression
+  | SIZEOF LPAREN type_name RPAREN
+  ;
+
+unary_operator ::=
+  AMP 
+  | TIMES
+  | PLUS
+  | MINUS 
+  | TILDE
+  | BANG
+  ;
+
+
+  /* place holders needs to be taken out later*/
+ cast_expression ::= unary_expression
+  ;
+
+type_name ::= TYPENAME
+  ;
+
+assignment_expression ::= cast_expression
+  ;
+
+expression ::= assignment_expression
+  ;
