@@ -57,13 +57,20 @@ terminal COMMA, COLON, SEMICOLON, LPAREN, RPAREN, LBRACK, RBRACK,
   terminal EQUALS, MUL_ASSIGN, DIV_ASSIGN, MOD_ASSIGN, ADD_ASSIGN, SUB_ASSIGN, 
           LSHIFT_ASSIGN, RSHIFT_ASSIGN, AND_ASSIGN, XOR_ASSIGN, OR_ASSIGN;
 
+/*3.6.1*/
+terminal CASE, DEFAULT;
+
 /* C token 3.6.4*/
 terminal SWITCH;
 terminal LOWER_THAN_ELSE;
 
+/* token for 3.6.6*/
+terminal GOTO, CONTINUE, RETURN;
 
-/*temp dummy place holder tokens remove later*/
-terminal PH_LABELED, PH_JUMP, PH_DECL;
+/*temp need to be taken out later*/
+
+
+
 
 non terminal Absyn.Exp          Exp;
 non terminal Absyn.Var          Var;
@@ -152,7 +159,6 @@ unary_expression ::=
   | INCR unary_expression
   | DECR unary_expression
   | unary_operator cast_expression
-  | SIZEOF unary_expression
   | SIZEOF LPAREN type_name RPAREN
   ;
 
@@ -291,6 +297,15 @@ statement ::=
   | jump_statement
   ;
 
+
+/*3.6.1 labled statementts*/
+labeled_statement ::=
+  ID COLON statement
+  | CASE constant_expression COLON statement
+  | DEFAULT COLON statement
+  ;
+
+
 /*3.6.2 compound statemetn or block*/
 compound_statement ::=
   LBRACE declaration_list statement_list RBRACE
@@ -338,20 +353,18 @@ iteration_statement ::=
 	| FOR LPAREN            SEMICOLON            SEMICOLON            RPAREN statement
 	;
 
+jump_statement ::=
+  GOTO ID SEMICOLON
+  | CONTINUE SEMICOLON
+  | BREAK SEMICOLON
+  | RETURN expression SEMICOLON
+  |RETURN SEMICOLON
+  ;
+
 
 
   /* place holders needs to be taken out later*/
 
-   labeled_statement ::= PH_LABELED
-    ;
-
-
-
-  jump_statement ::= PH_JUMP
-  ;
-
-  declatation ::= PH_DECL
-  ;
 
   type_name ::= TYPENAME
   ;
