@@ -128,155 +128,212 @@ Var ::=   ID:n
 
 /*3.3.1 primary expressions*/
 primary_expression ::=
-  ID  /* identifier*/
- |INT /* constant*/
- | STRING /* string literal*/
- | LPAREN expression RPAREN
+  ID  
+ |INT:x 
+ {:RESULT= new Absyn.intexp(x);:}
+ | STRING :s
+ {:RESULT = new Absyn.stringexp(s);:}
+ | LPAREN expression:e RPAREN
+ {:RESULT = new Absyn.primaryexp(e);:}
   ;
 
 
 /*3.3.2 postfix*/
 postfix_expression ::=
-  primary_expression
-|  postfix_expression LBRACK expression RBRACK
-|  postfix_expression LPAREN RPAREN
-|  postfix_expression LPAREN argument_expression_list RPAREN
-|  postfix_expression DOT ID
-|  postfix_expression ARROW ID
+  primary_expression:e
+  {:RESULT=e;:}
+|  postfix_expression:e1 LBRACK expression:e2 RBRACK
+{:RESULT=new Absyn.SubscriptExp(e1,e2);:}
+|  postfix_expression:e1 LPAREN RPAREN
+{:RESULT=new Absyn.CallExp(e1, null);:}
+|  postfix_expression:e1 LPAREN argument_expression_list:args RPAREN
+{:RESULT=new Absyn.CallExp(e1, args);:}
+|  postfix_expression:e1 DOT ID:id
+{:RESULT=new Absyn.Fieldid(e1, Symbol.symbol(id), false);:}
+|  postfix_expression:e1 ARROW ID:id
+{:RESULT=new Absyn.FieldExp(e1, Symbol.symbol(id), true);:}
 |  postfix_expression INCR
+{:RESULT=new Absyn.PostIncExp(e1);:}
 |  postfix_expression DECR
+{:RESULT= new Abysn.PostDecExp(e1);:}
   ;
 
 argument_expression_list ::=
-  assignment_expression
- | argument_expression_list COMMA assignment_expression
+  assignment_expression:e
+  {:RESULT= new Absyn.ExpList(e, null);:}
+ | argument_expression_list:e COMMA assignment_expression:l
+ {:RESULT= new Abysn.ExpList(e,l);:}
   ;
 
 
 /* 3.3.3 unary operatiors*/
 unary_expression ::=
-  postfix_expression
-  | INCR unary_expression
-  | DECR unary_expression
+  postfix_expression:e
+  {:RESULT=e;:}
+  | INCR unary_expression:e
+  {:RESULT=new Abysn.PreDecExp(e);:}
+  | DECR unary_expression:e
+  {:RESULT=new Absyn.UnaryExp(op.intValue, e);:}
   | unary_operator cast_expression
-  | SIZEOF LPAREN type_name RPAREN
+  {:RESULT = new Abysn.SizeOfExp(e);:}
+  | SIZEOF LPAREN type_name:t RPAREN
+  {:RESULT = new Abysn.SizeOfTypeExp(t);:}
   ;
 
 unary_operator ::=
-  AMP 
-  | TIMES
-  | PLUS
-  | MINUS 
-  | TILDE
-  | BANG
+  AMP {:RESULT=Abysn.UnaryExp.ADDR;:}
+  | TIMES {:RESULT=Abysn.UnaryExp.DEREF;:}
+  | PLUS {:RESULT=Abysn.UnaryExp.PLUS;:}
+  | MINUS  {:RESULT=Abysn.UnaryExp.MINUS;:}
+  | TILDE {:RESULT=Abysn.UnaryExp.BNOT;:}
+  | BANG {:RESULT=Abysn.UnaryExp.LNOT;:}
   ;
 
 /*3.3.4*/
 cast_expression ::=
-  unary_expression
+  unary_expression:e
+  {:RESULT=e;:}
   ;
 
 
 /*3.3.5*/
 multiplication_expression ::= 
   cast_expression
-  | multiplication_expression TIMES cast_expression
-  | multiplication_expression DIVIDE cast_expression
-  | multiplication_expression MOD cast_expression
+  | multiplication_expression:n1 TIMES cast_expression:n2
+  {:RESULT= new Abysn.BinOp(0,n1,n2, Absyn.BinOp.Op.TIMES):}
+  | multiplication_expression:n1 DIVIDE cast_expression:n2
+  {:RESULT= new Absyn.BinOp(0, n1,n2,Absyn.BinOp.Op.DIVIDE):}
+  | multiplication_expression:n1 MOD cast_expression:n2
+  {:RESULT = new Absyn.BinOp(0,n1,n2,Absyn.BinOp.Op.MOD ):}
   ;
 
 /*3.3.6 additive_exression*/
 additive_exression ::=
   multiplication_expression
-  | additive_exression PLUS multiplication_expression
-  | additive_exression MINUS multiplication_expression
+  | additive_exression:n1 PLUS multiplication_expression:n2
+  {:RESULT= new Absyn.BinOp(0, n1,n2, Absyn.BinOp.Op.PLUS):}
+  | additive_exression:n1 MINUS multiplication_expression:n2
+  {:RESULT= new Absyn.BinOp(0,n1,n2,Absyn.BinOp.Op.MINUS):}
   ;
 
 /*3.3.7 bwise shift*/
 shift_expression ::=
    additive_exression
-  | shift_expression LSHIFT additive_exression
-  | shift_expression RSHIFT additive_exression
+  | shift_expression:s1 LSHIFT additive_exression:s2
+  {:RESULT= new Absyn.BinOp(0, s1,s2,Absyn.BinOp.LSHIFT):}
+  | shift_expression:s1 RSHIFT additive_exression:s2
+  {:RESULT =new Absyn.BinOp(0,s1,s2,Absyn.BinOp.RSHIFT):}
   ;
 
 
 /* 3.3.8 relaiton operatiors*/
 relational_expression ::= 
   shift_expression
-  | relational_expression LT shift_expression
-  | relational_expression GT shift_expression
-  | relational_expression LE shift_expression
-  | relational_expression GE shift_expression
+  | relational_expression:n1 LT shift_expression:n2
+  {:RESULT= new Absyn.BinOp(0,n1,n2,Absyn.BinOp.LT):}
+  | relational_expression:n1 GT shift_expression:n2
+  {:RESULT= new Absyn.BinOp(0,n1,n2,Absyn.BinOp.GT):}
+  | relational_expression:n1 LE shift_expression:n1
+  {:RESULT= new Absyn.BinOp(0,n1,n2,Absyn.BinOp.LE):}
+  | relational_expression:n1 GE shift_expression:n2
+  {:RESULT= new Absyn.BinOp(0,n1,n2,Absyn.BinOp.GE):}
   ;
 
 /*3.3.9 equality operatiors*/
 equality_expression ::=
   relational_expression
-  | equality_expression EQ relational_expression
-  | equality_expression NEQ relational_expression
+  | equality_expression:n1 EQ relational_expression:n2
+  {:RESULT= new Absyn.BinOp(0,n1,n2,Absyn.BinOp.EQ):}
+  | equality_expression:n1 NEQ relational_expression:n2
+  {:RESULT= new Absyn.BinOp(0,n1,n2,Absyn.BinOp.NEQ):}
   ;
 
 /*3.3.10 bwise and */
 and_expression ::= 
-  equality_expression
-  | and_expression AMP equality_expression
+  equality_expression:e
+  {:RESULT=e;:}
+  | and_expression:e1 AMP equality_expression:e2
+  {:RESULT= new Abysn.OpExp(e1,Abysn.Opexp, BAND, e2);:}
   ;
 
 /*3.3.11 bwise exclusice or operator*/
 exclusive_or_expression ::=
-  and_expression
-  | exclusive_or_expression CARET and_expression
+  and_expression:e
+  {:RESULT =e;:}
+  | exclusive_or_expression:e1 CARET and_expression:e2
+  {:RESULT=new Abysn.OpExp(e1, Abysn.OpExp.BXOR,e2);:}
   ;
 
 /*3.3.12 logical and operatiors*/
 inclusive_or_expression ::=
-  exclusive_or_expression
-  | inclusive_or_expression PIPE exclusive_or_expression
+  exclusive_or_expression:e
+  {:RESULT=e;:}
+  | inclusive_or_expression:e1 PIPE exclusive_or_expression:e2
+  {:RESULT=new Absyn.OpExp(e1,Absyn.OpExp.BOR, e2);:}
   ;
 
 
 /*3.3.13 logical and operator*/
 logical_and_expression ::=
-  inclusive_or_expression
-  | logical_and_expression ANDAND inclusive_or_expression
+  inclusive_or_expression:e
+  {:RESULT=e;:}
+  | logical_and_expression:e1 ANDAND inclusive_or_expression:e2
+  {:RESULT= new Abysn.OpExp(e1, Absyn>OpExp.LAND, e2);:}
   ;
 
 /*3.3.14 logical or */
 logical_or_expression ::=
-  logical_and_expression
-  | logical_or_expression OROR logical_and_expression
+  logical_and_expression:e
+  {:RESULT=e;:}
+  | logical_or_expression:e1 OROR logical_and_expression:e2
+  {:RESULT=new Abysn.OpExp(e1, Absyn.OpExp.LOR, e2);:}
   ;
 
 /*3.3.15 conditional operatiors*/
 conditional_expression ::=
-  logical_or_expression
-  | logical_or_expression QUESTION expression COLON conditional_expression
+  logical_or_expression:e
+  {:RESULT=e;:}
+  | logical_or_expression:c QUESTION expression:t COLON conditional_expression:f
+  {:RESULT= new Abysn.CondExp(c,t,f);:}
   ;
 
  /*3.3.16 assign ment operatiors*/
  assignment_expression ::=
-    conditional_expression
-    | unary_expression assignment_operator assignment_expression
+    conditional_expression:e
+    | unary_expression:lhs assignment_operator:op assignment_expression:rhs
+    {:RESULT=new Absyn.AssignExp(lhs, op.intValue(), rhs);:}
     ; 
 
 assignment_operator ::=
-  EQUALS 
-  | MUL_ASSIGN
-  | DIV_ASSIGN 
+  EQUALS {:RESULT=Absyn.AssignExp.ASSIGN;:}
+  | MUL_ASSIGN 
+  {:RESULT=Absyn.AssignExp.MUL;:}
+  | DIV_ASSIGN  
+  {:RESULT=Absyn.AssignExp.DIV;:}
   | MOD_ASSIGN
+  {:RESULT=Absyn.AssignExp.MOD;:}
   | ADD_ASSIGN
+  {:RESULT=Absyn.AssignExp.ADD;:}
   | SUB_ASSIGN
+  {:RESULT=Absyn.AssignExp.SUB;:}
   | LSHIFT_ASSIGN
+  {:RESULT=Absyn.AssignExp.LSHIFT;:}
   | RSHIFT_ASSIGN
+  {:RESULT=Absyn.AssignExp.RSHIFT;:}
   | AND_ASSIGN
+  {:RESULT=Absyn.AssignExp.AND;:}
   | XOR_ASSIGN
+  {:RESULT=Absyn.AssignExp.XOR;:}
   | OR_ASSIGN
+  {:RESULT=Absyn.AssignExp.OR;:}
   ;
 
 /*3.3.17 comma */
 expression ::= 
-  assignment_expression
-  | expression COMMA assignment_expression
+  assignment_expression:e
+  {:RESULT=e;:}
+  | expression:e1 COMMA assignment_expression:e2
+  {:RESULT = new Absyn.CommaExp(e1, e2);:}
   ;
 
 
@@ -284,81 +341,115 @@ expression ::=
 /*3.3.4 constant expressions*/
  constant_expression ::=
     conditional_expression
+    {:RESULT = e;:}
     ;
 
 
 /* 3.6 statements*/
 statement ::=
-  labeled_statement
-  | compound_statement
-  | expression_statement
-  | selection_statement
-  | iteration_statement
-  | jump_statement
+  labeled_statement:s
+  {:RESULT=s;:}
+  | compound_statement:s
+{:RESULT=s;:}
+  | expression_statement:s
+  {:RESULT =s;:}
+  | selection_statement:s
+{:RESULT=s;:}
+  | iteration_statement:s
+  {:RESULT=s;:}
+  | jump_statement:s
+  {:RESULT=s;:}
   ;
 
 
 /*3.6.1 labled statementts*/
 labeled_statement ::=
-  ID COLON statement
-  | CASE constant_expression COLON statement
-  | DEFAULT COLON statement
+  ID:id COLON statement:s
+  {:RESULT =new Abysn.LableStmt(Symbol.symbol(id),s);:}
+  | CASE constant_expression:e COLON statement:s
+  {RESULT=new Absyn.CaseStmt(e,s);:}
+  | DEFAULT COLON statement:s
+  {:RESULT=new Abysn.DefaultStmt(s);:}
   ;
 
 
 /*3.6.2 compound statemetn or block*/
 compound_statement ::=
-  LBRACE declaration_list statement_list RBRACE
-  | LBRACE declaration_list RBRACE
-  | LBRACE statement_list RBRACE
+  LBRACE declaration_list:d statement_list:s RBRACE
+  {:RESULT = new Abysn.CompoundStmt(d,s);:}
+  | LBRACE declaration_list:d RBRACE
+  {:RESULT= new Abysn.CompoundStmt(d, null);:}
+  | LBRACE statement_list:s RBRACE
+  {:RESULT=new Abysn.CompoundStmt(null,s);:}
   | LBRACE RBRACE
+  {:RESULT= new Abysn.CompoundStmt(null, null);:}
   ;
 
 declaration_list ::=
-  declatation
-  | declaration_list declatation
+  declatation:d
+  {:RESULT=new Abysn.DecList(d, null);:}
+  | declaration_list:d declatation:l
+  {:RESULT=new Abysn.DecList(d,l);:}
   ;
 
 statement_list ::=
-  statement
-  | statement_list statement
+  statement:s
+  {:RESULT=new Abysn.StmtList(s,null);:}
+  | statement_list:s statement:l
+  {:RESULT=new Abysn.StmtList(s,l);:}
   ;
   
-/*3.6.3 expression and null */
+/*3.6.3 expression and null 2+2; */
 expression_statement ::=
-  expression SEMICOLON
+  expression:e SEMICOLON
+  {:RESULT = new Absyn.ExpStmt(e);:}
   | SEMICOLON
+  {:RESULT=new Abysn.NullStmt();:}
   ;
 
 
 /*3.6.4 selection statemetn*/
 selection_statement ::=
-  IF LPAREN expression RPAREN statement %prec LOWER_THAN_ELSE
-  | IF LPAREN expression RPAREN statement ELSE statement
-  | SWITCH LPAREN expression RPAREN statement
+  IF LPAREN expression:c RPAREN statement:t 
+  {:RESULT=new Abysn.IfStmt(c,t,null);:}
+     %prec LOWER_THAN_ELSE
+  | IF LPAREN expression:c RPAREN statement:t ELSE statement:f
+  {:RESULT=new Abysn.IfStmt(c,t,f);:}
+  | SWITCH LPAREN expression:e RPAREN statement:s
+  {:RESULT=new Absyn.SwitchStmt(e,s);:}
   ;
 
 /* 3.6.5 iteration statements*/
 
 iteration_statement ::=
-	  WHILE LPAREN expression RPAREN statement
-	| DO statement WHILE LPAREN expression RPAREN SEMICOLON
-	| FOR LPAREN expression SEMICOLON expression SEMICOLON expression RPAREN statement
-	| FOR LPAREN expression SEMICOLON expression SEMICOLON            RPAREN statement
-	| FOR LPAREN expression SEMICOLON            SEMICOLON expression RPAREN statement
-	| FOR LPAREN expression SEMICOLON            SEMICOLON            RPAREN statement
-	| FOR LPAREN            SEMICOLON expression SEMICOLON expression RPAREN statement
-	| FOR LPAREN            SEMICOLON expression SEMICOLON            RPAREN statement
-	| FOR LPAREN            SEMICOLON            SEMICOLON expression RPAREN statement
-	| FOR LPAREN            SEMICOLON            SEMICOLON            RPAREN statement
-	;
+	  WHILE LPAREN expression:c RPAREN statement:s
+    {:RESULT=new Abysn.WhileStmt(c,s);:}
+    | DO statement:s WHILE LPAREN expression:c RPAREN SEMICOLON
+    {:RESULT=new Abysn.DoStmt(s,c);:}
+    | FOR LPAREN opt_expression:i SEMICOLON opt_expression:c SEMICOLON
+    opt_expression:u RPAREN statement:s
+    {:RESULT=new Abysn.ForStmt(i,c,u,s);:}
+;
+
+opt_expression::=
+  /*empty*/
+  {:RESULT=null;:}
+  | expression:e
+    {:RESULT=e;:}
+    ;
+
 
 jump_statement ::=
   GOTO ID SEMICOLON
+  {:RESULT=new Absyn.GotoStmt(Synbol.symbol(id));:}
   | CONTINUE SEMICOLON
+  {:RESULT= new Abysn.ContinueStmt();:}
   | BREAK SEMICOLON
-  | RETURN expression SEMICOLON
+  {:RESULT=new Abysn.BreakStmt();:}
+  | RETURN expression:e SEMICOLON
+  {:RESULT=new Absyn.ReturnStmt(e);:}
   |RETURN SEMICOLON
+  {:RESULT=new Abysn.ReturnStmt(null);:}
   ;
 
 
