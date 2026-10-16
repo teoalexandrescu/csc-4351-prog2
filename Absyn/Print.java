@@ -287,4 +287,51 @@ public class Print {
     }
     say(")");
   }
+  public void prStmt(Stmt s, int d) {
+    indent(d);
+
+    if (s instanceof ExprStmt) {
+      ExprStmt e = (ExprStmt) s;
+      sayln("ExprStmt(");
+
+      if (e.exp != null) {
+        prExp(e.exp, d + 1);
+      }
+
+      say(")");
+    }
+
+    else if (s instanceof IfStmt) {
+      IfStmt e = (IfStmt) s;
+      sayln("IfStmt(");
+
+      prExp(e.test, d + 1);
+      sayln(",");
+
+      prStmt(e.thenclause, d + 1);
+
+      if (e.elseclause != null) {
+        sayln(",");
+        prStmt(e.elseclause, d + 1);
+      }
+
+      say(")");
+    }
+
+    else if (s instanceof WhileStmt) {
+      WhileStmt e = (WhileStmt) s;
+      sayln("WhileStmt(");
+
+      prExp(e.test, d + 1);
+      sayln(",");
+
+      prStmt(e.body, d + 1);
+
+      say(")");
+    }
+
+    else {
+      throw new Error("Print.prStmt");
+    }
+  }
 }
