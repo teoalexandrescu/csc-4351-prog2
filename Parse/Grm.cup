@@ -33,6 +33,13 @@ scan with {: return lexer.nextToken(); :};
 terminal String ID, STRING;
 terminal Integer DECIMAL_LITERAL;
 terminal INT_KEYWORD;
+
+/* Additional C89 tokens recognized by the lexer */
+terminal AUTO, CHAR, CONST, DOUBLE, ELIPSES, ENUM, EXTERN,
+         FLOAT, FUN, LONG, REGISTER, SHORT, SIGNED, STATIC,
+         STRUCT, TYPEDEF, UNION, UNSIGNED, VOID, VOLATILE;
+terminal String STRING_LITERAL, CHAR_LITERAL;
+
 terminal COMMA, COLON, SEMICOLON, LPAREN, RPAREN, LBRACK, RBRACK, 
 	LBRACE, RBRACE, DOT, PLUS, MINUS, TIMES, DIVIDE, EQ, NEQ, LT, LE, 
 	GT, GE, AND, OR, ASSIGN, ARRAY, IF, THEN, ELSE, WHILE, FOR, TO,
@@ -78,27 +85,27 @@ non terminal Absyn.Exp          Exp;
 non terminal Absyn.Var          Var;
 
 /* c grammor from c89*/
-non terminal primary_expression;
-non terminal postfix_expression;
+non terminal Absyn.Exp primary_expression;
+non terminal Absyn.Exp postfix_expression;
 non terminal argument_expression_list;
-non terminal unary_expression;
+non terminal Absyn.Exp unary_expression;
 non terminal unary_operator;
-non terminal cast_expression;
-non terminal multiplication_expression;
-non terminal additive_exression;
-non terminal shift_expression;
-non terminal relational_expression;
-non terminal equality_expression;
-non terminal and_expression;
-non terminal exclusive_or_expression;
-non terminal inclusive_or_expression;
-non terminal logical_and_expression;
-non terminal logical_or_expression;
-non terminal conditional_expression;
+non terminal Absyn.Exp cast_expression;
+non terminal Absyn.Exp multiplication_expression;
+non terminal Absyn.Exp additive_exression;
+non terminal Absyn.Exp shift_expression;
+non terminal Absyn.Exp relational_expression;
+non terminal Absyn.Exp equality_expression;
+non terminal Absyn.Exp and_expression;
+non terminal Absyn.Exp exclusive_or_expression;
+non terminal Absyn.Exp inclusive_or_expression;
+non terminal Absyn.Exp logical_and_expression;
+non terminal Absyn.Exp logical_or_expression;
+non terminal Absyn.Exp conditional_expression;
 non terminal constant_expression;
 non terminal assignment_operator;
-non terminal assignment_expression;
-non terminal expression;
+non terminal Absyn.Exp assignment_expression;
+non terminal Absyn.Exp expression;
 non terminal type_name;
 non terminal statement;
 non terminal labeled_statement;
@@ -109,7 +116,7 @@ non terminal declaration;
 non terminal expression_statement;
 non terminal selection_statement;
 non terminal iteration_statement;
-non terminal jump_statement;
+non terminal Absyn.Stmt jump_statement;
 /* C89 program structure */
 non terminal translation_unit;
 non terminal external_declaration;
@@ -148,7 +155,7 @@ Var ::=   ID:n
 /*3.3.1 primary expressions*/
 primary_expression ::=
   ID  /* identifier*/
- | DECIMAL_LITERAL /* constant*/
+ | DECIMAL_LITERAL:n {: RESULT = new Absyn.IntExp(nleft, n.intValue()); :} /* constant*/
  | STRING /* string literal*/
  | LPAREN expression RPAREN
   ;
@@ -156,8 +163,8 @@ primary_expression ::=
 
 /*3.3.2 postfix*/
 postfix_expression ::=
-  primary_expression
-|  postfix_expression LBRACK expression RBRACK
+  primary_expression:e {: RESULT = e; :}
+|  postfix_expression:e {: RESULT = e; :} LBRACK expression RBRACK
 |  postfix_expression LPAREN RPAREN
 |  postfix_expression LPAREN argument_expression_list RPAREN
 |  postfix_expression DOT ID
@@ -192,14 +199,14 @@ unary_operator ::=
 
 /*3.3.4*/
 cast_expression ::=
-  unary_expression
+  unary_expression:e {: RESULT = e; :}
   ;
 
 
 /*3.3.5*/
 multiplication_expression ::= 
-  cast_expression
-  | multiplication_expression TIMES cast_expression
+  cast_expression:e {: RESULT = e; :}
+  | multiplication_expression:e {: RESULT = e; :} TIMES cast_expression
   | multiplication_expression DIVIDE cast_expression
   | multiplication_expression MOD cast_expression
   ;
@@ -207,14 +214,14 @@ multiplication_expression ::=
 /*3.3.6 additive_exression*/
 additive_exression ::=
   multiplication_expression
-  | additive_exression PLUS multiplication_expression
+  | additive_exression:e {: RESULT = e; :} PLUS multiplication_expression
   | additive_exression MINUS multiplication_expression
   ;
 
 /*3.3.7 bwise shift*/
 shift_expression ::=
    additive_exression
-  | shift_expression LSHIFT additive_exression
+  | shift_expression:e {: RESULT = e; :} LSHIFT additive_exression
   | shift_expression RSHIFT additive_exression
   ;
 
@@ -222,7 +229,7 @@ shift_expression ::=
 /* 3.3.8 relaiton operatiors*/
 relational_expression ::= 
   shift_expression
-  | relational_expression LT shift_expression
+  | relational_expression:e {: RESULT = e; :} LT shift_expression
   | relational_expression GT shift_expression
   | relational_expression LE shift_expression
   | relational_expression GE shift_expression
@@ -231,39 +238,39 @@ relational_expression ::=
 /*3.3.9 equality operatiors*/
 equality_expression ::=
   relational_expression
-  | equality_expression EQ relational_expression
+  | equality_expression:e {: RESULT = e; :} EQ relational_expression
   | equality_expression NEQ relational_expression
   ;
 
 /*3.3.10 bwise and */
 and_expression ::= 
   equality_expression
-  | and_expression AMP equality_expression
+  | and_expression:e {: RESULT = e; :} AMP equality_expression
   ;
 
 /*3.3.11 bwise exclusice or operator*/
 exclusive_or_expression ::=
   and_expression
-  | exclusive_or_expression CARET and_expression
+  | exclusive_or_expression:e {: RESULT = e; :} CARET and_expression
   ;
 
 /*3.3.12 logical and operatiors*/
 inclusive_or_expression ::=
   exclusive_or_expression
-  | inclusive_or_expression PIPE exclusive_or_expression
+  | inclusive_or_expression:e {: RESULT = e; :} PIPE exclusive_or_expression
   ;
 
 
 /*3.3.13 logical and operator*/
 logical_and_expression ::=
   inclusive_or_expression
-  | logical_and_expression ANDAND inclusive_or_expression
+  | logical_and_expression:e {: RESULT = e; :} ANDAND inclusive_or_expression
   ;
 
 /*3.3.14 logical or */
 logical_or_expression ::=
   logical_and_expression
-  | logical_or_expression OROR logical_and_expression
+  | logical_or_expression:e {: RESULT = e; :} OROR logical_and_expression
   ;
 
 /*3.3.15 conditional operatiors*/
@@ -274,7 +281,7 @@ conditional_expression ::=
 
  /*3.3.16 assign ment operatiors*/
  assignment_expression ::=
-    conditional_expression
+    conditional_expression:e {: RESULT = e; :}
     | unary_expression assignment_operator assignment_expression
     ; 
 
@@ -294,7 +301,7 @@ assignment_operator ::=
 
 /*3.3.17 comma */
 expression ::= 
-  assignment_expression
+  assignment_expression:e {: RESULT = e; :}
   | expression COMMA assignment_expression
   ;
 
@@ -378,7 +385,7 @@ jump_statement ::=
   GOTO ID SEMICOLON
   | CONTINUE SEMICOLON
   | BREAK SEMICOLON
-  | RETURN expression SEMICOLON
+  | RETURN:r expression:e SEMICOLON {: RESULT = new Absyn.ReturnStmt(rleft, e); :}
   |RETURN SEMICOLON
   ;
 

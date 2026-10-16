@@ -8,86 +8,108 @@ package Parse;
 /** CUP generated class containing symbol constants. */
 public class sym {
   /* terminals */
-  public static final int TIMES = 18;
-  public static final int MOD_ASSIGN = 65;
-  public static final int GT = 24;
-  public static final int ARROW = 46;
-  public static final int AMP = 50;
-  public static final int TYPE = 45;
-  public static final int SUB_ASSIGN = 67;
-  public static final int GE = 25;
-  public static final int LOWER_THAN_ELSE = 76;
-  public static final int INCR = 47;
-  public static final int RBRACK = 12;
-  public static final int SIZEOF = 49;
-  public static final int COMMA = 6;
-  public static final int RBRACE = 14;
-  public static final int RPAREN = 10;
-  public static final int AND_ASSIGN = 70;
-  public static final int LBRACK = 11;
-  public static final int LT = 22;
-  public static final int ANDAND = 59;
-  public static final int OROR = 60;
-  public static final int LBRACE = 13;
-  public static final int LPAREN = 9;
-  public static final int TILDE = 51;
-  public static final int RSHIFT_ASSIGN = 69;
-  public static final int LE = 23;
-  public static final int NIL = 42;
-  public static final int ARRAY = 29;
-  public static final int XOR_ASSIGN = 71;
-  public static final int DECR = 48;
-  public static final int VAR = 44;
-  public static final int GOTO = 77;
-  public static final int THEN = 31;
-  public static final int EQ = 20;
-  public static final int MOD = 54;
-  public static final int PIPE = 58;
-  public static final int ADD_ASSIGN = 66;
-  public static final int PLUS = 16;
-  public static final int DIVIDE = 19;
-  public static final int QUESTION = 61;
+  public static final int SHORT = 17;
+  public static final int SIGNED = 18;
+  public static final int TIMES = 40;
+  public static final int MOD_ASSIGN = 87;
+  public static final int GT = 46;
+  public static final int AMP = 72;
+  public static final int ARROW = 68;
+  public static final int SUB_ASSIGN = 89;
+  public static final int TYPE = 67;
+  public static final int CONST = 8;
+  public static final int GE = 47;
+  public static final int REGISTER = 16;
+  public static final int LOWER_THAN_ELSE = 98;
+  public static final int ENUM = 11;
+  public static final int INCR = 69;
+  public static final int SIZEOF = 71;
+  public static final int RBRACK = 34;
+  public static final int COMMA = 28;
+  public static final int RBRACE = 36;
+  public static final int RPAREN = 32;
+  public static final int AND_ASSIGN = 92;
+  public static final int LBRACK = 33;
+  public static final int LT = 44;
+  public static final int ANDAND = 81;
+  public static final int OROR = 82;
+  public static final int DOUBLE = 9;
+  public static final int STRUCT = 20;
+  public static final int LBRACE = 35;
+  public static final int LPAREN = 31;
+  public static final int TILDE = 73;
+  public static final int RSHIFT_ASSIGN = 91;
+  public static final int LE = 45;
+  public static final int NIL = 64;
+  public static final int ARRAY = 51;
+  public static final int XOR_ASSIGN = 93;
+  public static final int DECR = 70;
+  public static final int VAR = 66;
+  public static final int FLOAT = 13;
+  public static final int GOTO = 99;
+  public static final int THEN = 53;
+  public static final int EQ = 42;
+  public static final int MOD = 76;
+  public static final int ADD_ASSIGN = 88;
+  public static final int PIPE = 80;
+  public static final int LONG = 15;
+  public static final int PLUS = 38;
+  public static final int DIVIDE = 41;
+  public static final int QUESTION = 83;
   public static final int INT_KEYWORD = 5;
-  public static final int WHILE = 33;
-  public static final int MUL_ASSIGN = 63;
-  public static final int ASSIGN = 28;
-  public static final int SWITCH = 75;
-  public static final int DO = 36;
-  public static final int FOR = 34;
-  public static final int RETURN = 79;
-  public static final int ELSE = 32;
-  public static final int BREAK = 41;
-  public static final int DOT = 15;
+  public static final int WHILE = 55;
+  public static final int UNION = 22;
+  public static final int MUL_ASSIGN = 85;
+  public static final int ASSIGN = 50;
+  public static final int CHAR = 7;
+  public static final int SWITCH = 97;
+  public static final int DO = 58;
+  public static final int FOR = 56;
+  public static final int VOID = 24;
+  public static final int EXTERN = 12;
+  public static final int RETURN = 101;
+  public static final int ELSE = 54;
+  public static final int BREAK = 63;
+  public static final int FUN = 14;
+  public static final int DOT = 37;
+  public static final int STRING_LITERAL = 26;
   public static final int EOF = 0;
-  public static final int SEMICOLON = 8;
-  public static final int BANG = 52;
-  public static final int DEFAULT = 74;
-  public static final int FUNCTION = 43;
-  public static final int MINUS = 17;
-  public static final int IN = 38;
-  public static final int OR = 27;
+  public static final int SEMICOLON = 30;
+  public static final int BANG = 74;
+  public static final int DEFAULT = 96;
+  public static final int ELIPSES = 10;
+  public static final int FUNCTION = 65;
+  public static final int MINUS = 39;
+  public static final int IN = 60;
+  public static final int OR = 49;
   public static final int error = 1;
   public static final int DECIMAL_LITERAL = 4;
-  public static final int OR_ASSIGN = 72;
-  public static final int CONTINUE = 78;
-  public static final int IF = 30;
-  public static final int LSHIFT_ASSIGN = 68;
+  public static final int OR_ASSIGN = 94;
+  public static final int CONTINUE = 100;
+  public static final int IF = 52;
+  public static final int UNSIGNED = 23;
+  public static final int LSHIFT_ASSIGN = 90;
   public static final int ID = 2;
-  public static final int DIV_ASSIGN = 64;
-  public static final int OF = 40;
-  public static final int END = 39;
-  public static final int COLON = 7;
-  public static final int CARET = 57;
-  public static final int CASE = 73;
-  public static final int TYPENAME = 53;
-  public static final int RSHIFT = 56;
+  public static final int DIV_ASSIGN = 86;
+  public static final int OF = 62;
+  public static final int END = 61;
+  public static final int COLON = 29;
+  public static final int CARET = 79;
+  public static final int VOLATILE = 25;
+  public static final int CHAR_LITERAL = 27;
+  public static final int CASE = 95;
+  public static final int TYPENAME = 75;
+  public static final int RSHIFT = 78;
   public static final int STRING = 3;
-  public static final int NEQ = 21;
-  public static final int AND = 26;
-  public static final int TO = 35;
-  public static final int LSHIFT = 55;
-  public static final int LET = 37;
-  public static final int EQUALS = 62;
+  public static final int NEQ = 43;
+  public static final int AND = 48;
+  public static final int TO = 57;
+  public static final int STATIC = 19;
+  public static final int LSHIFT = 77;
+  public static final int LET = 59;
+  public static final int TYPEDEF = 21;
+  public static final int EQUALS = 84;
+  public static final int AUTO = 6;
   public static final String[] terminalNames = new String[] {
   "EOF",
   "error",
@@ -95,6 +117,28 @@ public class sym {
   "STRING",
   "DECIMAL_LITERAL",
   "INT_KEYWORD",
+  "AUTO",
+  "CHAR",
+  "CONST",
+  "DOUBLE",
+  "ELIPSES",
+  "ENUM",
+  "EXTERN",
+  "FLOAT",
+  "FUN",
+  "LONG",
+  "REGISTER",
+  "SHORT",
+  "SIGNED",
+  "STATIC",
+  "STRUCT",
+  "TYPEDEF",
+  "UNION",
+  "UNSIGNED",
+  "VOID",
+  "VOLATILE",
+  "STRING_LITERAL",
+  "CHAR_LITERAL",
   "COMMA",
   "COLON",
   "SEMICOLON",
