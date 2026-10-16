@@ -1,5 +1,5 @@
 package Parse;
-terminal INT_KEYWORD;  
+
 
 action code {: static Symbol.Symbol sym(String s) {
 	         return Symbol.Symbol.symbol(s);
@@ -32,6 +32,7 @@ scan with {: return lexer.nextToken(); :};
 
 terminal String ID, STRING;
 terminal Integer DECIMAL_LITERAL;
+terminal INT_KEYWORD;
 terminal COMMA, COLON, SEMICOLON, LPAREN, RPAREN, LBRACK, RBRACK, 
 	LBRACE, RBRACE, DOT, PLUS, MINUS, TIMES, DIVIDE, EQ, NEQ, LT, LE, 
 	GT, GE, AND, OR, ASSIGN, ARRAY, IF, THEN, ELSE, WHILE, FOR, TO,
@@ -116,6 +117,7 @@ non terminal function_definition;
 
 precedence nonassoc LOWER_THAN_ELSE;
 precedence nonassoc ELSE;
+start with translation_unit;
 /* C89 program structure */
 
 translation_unit ::=
@@ -131,7 +133,7 @@ external_declaration ::=
 function_definition ::=
     INT_KEYWORD ID LPAREN RPAREN compound_statement
   ;
-start with translation_unit;
+
 Exp ::= error:e
 	  {: RESULT = new Absyn.SeqExp(eleft, null); :}
 	| Var:v
