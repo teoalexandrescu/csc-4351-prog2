@@ -87,9 +87,9 @@ non terminal Absyn.Var          Var;
 /* c grammor from c89*/
 non terminal Absyn.Exp primary_expression;
 non terminal Absyn.Exp postfix_expression;
-non terminal argument_expression_list;
+non terminal java.util.LinkedList argument_expression_list;
 non terminal Absyn.Exp unary_expression;
-non terminal unary_operator;
+non terminal String unary_operator;
 non terminal Absyn.Exp cast_expression;
 non terminal Absyn.Exp multiplication_expression;
 non terminal Absyn.Exp additive_exression;
@@ -102,43 +102,56 @@ non terminal Absyn.Exp inclusive_or_expression;
 non terminal Absyn.Exp logical_and_expression;
 non terminal Absyn.Exp logical_or_expression;
 non terminal Absyn.Exp conditional_expression;
-non terminal constant_expression;
-non terminal assignment_operator;
+non terminal Absyn.Exp constant_expression;
+non terminal String assignment_operator;
 non terminal Absyn.Exp assignment_expression;
 non terminal Absyn.Exp expression;
-non terminal type_name;
+non terminal String type_name;
 non terminal Absyn.Stmt statement;
 non terminal Absyn.Stmt labeled_statement;
 non terminal Absyn.Stmt compound_statement;
-non terminal declaration_list;
+non terminal java.util.LinkedList declaration_list;
 non terminal Absyn.StmtList statement_list;
-non terminal declaration;
+non terminal Absyn.Absyn declaration;
 non terminal Absyn.Stmt expression_statement;
 non terminal Absyn.Stmt selection_statement;
 non terminal Absyn.Stmt iteration_statement;
 non terminal Absyn.Stmt jump_statement;
 /* C89 program structure */
-non terminal translation_unit;
-non terminal external_declaration;
-non terminal function_definition;
+non terminal Absyn.Program translation_unit;
+non terminal Absyn.Absyn external_declaration;
+non terminal Absyn.CFunction function_definition;
+
+
+/* Professor-provided simplified declaration grammar. */
+non terminal Symbol.Symbol name;
+non terminal java.util.LinkedList bitfield_list, empty_array_type_list,
+    expression_array_type_list, pointer_list, brackets_list, type_augments,
+    parameter_list, parameter_type_list, parameters, type_parameters,
+    initializer_list, enumerator_list, struct_declaration_list;
+non terminal String bitfield_value, struct_or_union;
+non terminal Absyn.CType type;
+non terminal Absyn.CInitializer initialization, initializer;
+non terminal Absyn.CArrayDimension empty_array_type, expression_array_type;
+non terminal Absyn.CParameter parameter;
+non terminal Absyn.CEnumerator enumerator;
+non terminal Absyn.Exp struct_or_union_declarator;
 
 precedence nonassoc LOWER_THAN_ELSE;
 precedence nonassoc ELSE;
 start with translation_unit;
 /* C89 program structure */
 
-translation_unit ::=
-    external_declaration
-  | translation_unit external_declaration
+translation_unit ::= external_declaration:d
+    {: java.util.LinkedList items = new java.util.LinkedList(); items.add(d); RESULT = new Absyn.Program(d.pos, items); :}
+  | translation_unit:p external_declaration:d
+    {: p.items.add(d); RESULT = p; :}
   ;
-
-external_declaration ::=
-    function_definition
-  | declaration
+external_declaration ::= function_definition:f {: RESULT = f; :}
+  | declaration:d {: RESULT = d; :}
   ;
-
-function_definition ::=
-    INT_KEYWORD ID LPAREN RPAREN compound_statement
+function_definition ::= INT_KEYWORD ID:n LPAREN RPAREN compound_statement:b
+    {: RESULT = new Absyn.CFunction(nleft, sym(n), b); :}
   ;
 
 Exp ::= error:e
@@ -153,165 +166,115 @@ Var ::=   ID:n
 
 
 /*3.3.1 primary expressions*/
-primary_expression ::=
-  ID  /* identifier*/
- | DECIMAL_LITERAL:n {: RESULT = new Absyn.IntExp(nleft, n.intValue()); :} /* constant*/
- | STRING /* string literal*/
- | LPAREN expression RPAREN
-  ;
-
-
-/*3.3.2 postfix*/
-postfix_expression ::=
-  primary_expression:e {: RESULT = e; :}
-|  postfix_expression:e {: RESULT = e; :} LBRACK expression RBRACK
-|  postfix_expression LPAREN RPAREN
-|  postfix_expression LPAREN argument_expression_list RPAREN
-|  postfix_expression DOT ID
-|  postfix_expression ARROW ID
-|  postfix_expression INCR
-|  postfix_expression DECR
-  ;
-
-argument_expression_list ::=
-  assignment_expression
- | argument_expression_list COMMA assignment_expression
-  ;
-
-
+primary_expression ::= ID:n {: RESULT = new Absyn.IdExp(nleft, sym(n)); :}
+ | DECIMAL_LITERAL:n {: RESULT = new Absyn.IntExp(nleft, n.intValue()); :}
+ | STRING_LITERAL:v {: RESULT = new Absyn.StringLiteral(vleft, v); :}
+ | CHAR_LITERAL:v {: RESULT = new Absyn.CharLiteral(vleft, v); :}
+ | LPAREN expression:e RPAREN {: RESULT = new Absyn.ParenExp(eleft,e); :}
+ ;
+postfix_expression ::= primary_expression:e {: RESULT=e; :}
+ | postfix_expression:a LBRACK expression:i RBRACK {: RESULT=new Absyn.IndexExp(aleft,a,i); :}
+ | postfix_expression:f LPAREN RPAREN {: RESULT=new Absyn.FunctionCall(fleft,f,new java.util.LinkedList()); :}
+ | postfix_expression:f LPAREN argument_expression_list:args RPAREN {: RESULT=new Absyn.FunctionCall(fleft,f,args); :}
+ | postfix_expression:e DOT ID:n {: RESULT=new Absyn.FieldAccess(eleft,e,".",sym(n)); :}
+ | postfix_expression:e ARROW ID:n {: RESULT=new Absyn.FieldAccess(eleft,e,"->",sym(n)); :}
+ | postfix_expression:e INCR {: RESULT=new Absyn.PostfixExp(eleft,e,"++"); :}
+ | postfix_expression:e DECR {: RESULT=new Absyn.PostfixExp(eleft,e,"--"); :}
+ ;
+argument_expression_list ::= assignment_expression:e {: java.util.LinkedList l=new java.util.LinkedList(); l.add(e); RESULT=l; :}
+ | argument_expression_list:l COMMA assignment_expression:e {: l.add(e); RESULT=l; :}
+ ;
 /* 3.3.3 unary operatiors*/
-unary_expression ::=
-  postfix_expression
-  | INCR unary_expression
-  | DECR unary_expression
-  | unary_operator cast_expression
-  | SIZEOF LPAREN type_name RPAREN
-  ;
-
-unary_operator ::=
-  AMP 
-  | TIMES
-  | PLUS
-  | MINUS 
-  | TILDE
-  | BANG
-  ;
-
+unary_expression ::= postfix_expression:e {: RESULT=e; :}
+ | INCR:i unary_expression:e {: RESULT=new Absyn.UnaryExp(ileft,"++",e); :}
+ | DECR:i unary_expression:e {: RESULT=new Absyn.UnaryExp(ileft,"--",e); :}
+ | unary_operator:o cast_expression:e {: RESULT=new Absyn.UnaryExp(eleft,o,e); :}
+ | SIZEOF:s LPAREN type_name:t RPAREN {: RESULT=new Absyn.SizeofExp(sleft,t); :}
+ ;
+unary_operator ::= AMP {: RESULT="&"; :} | TIMES {: RESULT="*"; :}
+ | PLUS {: RESULT="+"; :} | MINUS {: RESULT="-"; :}
+ | TILDE {: RESULT="~"; :} | BANG {: RESULT="!"; :}
+ ;
 /*3.3.4*/
 cast_expression ::=
   unary_expression:e {: RESULT = e; :}
   ;
 
 
-/*3.3.5*/
-multiplication_expression ::= 
-  cast_expression:e {: RESULT = e; :}
-  | multiplication_expression:e {: RESULT = e; :} TIMES cast_expression
-  | multiplication_expression DIVIDE cast_expression
-  | multiplication_expression MOD cast_expression
-  ;
+multiplication_expression ::= cast_expression:e {: RESULT=e; :}
+ | multiplication_expression:l TIMES cast_expression:r {: RESULT=new Absyn.BinaryExp(lleft,l,"*",r); :}
+ | multiplication_expression:l DIVIDE cast_expression:r {: RESULT=new Absyn.BinaryExp(lleft,l,"/",r); :}
+ | multiplication_expression:l MOD cast_expression:r {: RESULT=new Absyn.BinaryExp(lleft,l,"%",r); :}
+ ;
 
-/*3.3.6 additive_exression*/
-additive_exression ::=
-  multiplication_expression
-  | additive_exression:e {: RESULT = e; :} PLUS multiplication_expression
-  | additive_exression MINUS multiplication_expression
-  ;
+additive_exression ::= multiplication_expression:e {: RESULT=e; :}
+ | additive_exression:l PLUS multiplication_expression:r {: RESULT=new Absyn.BinaryExp(lleft,l,"+",r); :}
+ | additive_exression:l MINUS multiplication_expression:r {: RESULT=new Absyn.BinaryExp(lleft,l,"-",r); :}
+ ;
 
-/*3.3.7 bwise shift*/
-shift_expression ::=
-   additive_exression
-  | shift_expression:e {: RESULT = e; :} LSHIFT additive_exression
-  | shift_expression RSHIFT additive_exression
-  ;
+shift_expression ::= additive_exression:e {: RESULT=e; :}
+ | shift_expression:l LSHIFT additive_exression:r {: RESULT=new Absyn.BinaryExp(lleft,l,"<<",r); :}
+ | shift_expression:l RSHIFT additive_exression:r {: RESULT=new Absyn.BinaryExp(lleft,l,">>",r); :}
+ ;
 
+relational_expression ::= shift_expression:e {: RESULT=e; :}
+ | relational_expression:l LT shift_expression:r {: RESULT=new Absyn.BinaryExp(lleft,l,"<",r); :}
+ | relational_expression:l GT shift_expression:r {: RESULT=new Absyn.BinaryExp(lleft,l,">",r); :}
+ | relational_expression:l LE shift_expression:r {: RESULT=new Absyn.BinaryExp(lleft,l,"<=",r); :}
+ | relational_expression:l GE shift_expression:r {: RESULT=new Absyn.BinaryExp(lleft,l,">=",r); :}
+ ;
 
-/* 3.3.8 relaiton operatiors*/
-relational_expression ::= 
-  shift_expression
-  | relational_expression:e {: RESULT = e; :} LT shift_expression
-  | relational_expression GT shift_expression
-  | relational_expression LE shift_expression
-  | relational_expression GE shift_expression
-  ;
+equality_expression ::= relational_expression:e {: RESULT=e; :}
+ | equality_expression:l EQ relational_expression:r {: RESULT=new Absyn.BinaryExp(lleft,l,"==",r); :}
+ | equality_expression:l NEQ relational_expression:r {: RESULT=new Absyn.BinaryExp(lleft,l,"!=",r); :}
+ ;
 
-/*3.3.9 equality operatiors*/
-equality_expression ::=
-  relational_expression
-  | equality_expression:e {: RESULT = e; :} EQ relational_expression
-  | equality_expression NEQ relational_expression
-  ;
+and_expression ::= equality_expression:e {: RESULT=e; :}
+ | and_expression:l AMP equality_expression:r {: RESULT=new Absyn.BinaryExp(lleft,l,"&",r); :}
+ ;
 
-/*3.3.10 bwise and */
-and_expression ::= 
-  equality_expression
-  | and_expression:e {: RESULT = e; :} AMP equality_expression
-  ;
+exclusive_or_expression ::= and_expression:e {: RESULT=e; :}
+ | exclusive_or_expression:l CARET and_expression:r {: RESULT=new Absyn.BinaryExp(lleft,l,"^",r); :}
+ ;
 
-/*3.3.11 bwise exclusice or operator*/
-exclusive_or_expression ::=
-  and_expression
-  | exclusive_or_expression:e {: RESULT = e; :} CARET and_expression
-  ;
+inclusive_or_expression ::= exclusive_or_expression:e {: RESULT=e; :}
+ | inclusive_or_expression:l PIPE exclusive_or_expression:r {: RESULT=new Absyn.BinaryExp(lleft,l,"|",r); :}
+ ;
 
-/*3.3.12 logical and operatiors*/
-inclusive_or_expression ::=
-  exclusive_or_expression
-  | inclusive_or_expression:e {: RESULT = e; :} PIPE exclusive_or_expression
-  ;
+logical_and_expression ::= inclusive_or_expression:e {: RESULT=e; :}
+ | logical_and_expression:l ANDAND inclusive_or_expression:r {: RESULT=new Absyn.BinaryExp(lleft,l,"&&",r); :}
+ ;
 
+logical_or_expression ::= logical_and_expression:e {: RESULT=e; :}
+ | logical_or_expression:l OROR logical_and_expression:r {: RESULT=new Absyn.BinaryExp(lleft,l,"||",r); :}
+ ;
 
-/*3.3.13 logical and operator*/
-logical_and_expression ::=
-  inclusive_or_expression
-  | logical_and_expression:e {: RESULT = e; :} ANDAND inclusive_or_expression
-  ;
+conditional_expression ::= logical_or_expression:e {: RESULT=e; :}
+ | logical_or_expression:t QUESTION expression:a COLON conditional_expression:b {: RESULT=new Absyn.ConditionalExp(tleft,t,a,b); :}
+ ;
 
-/*3.3.14 logical or */
-logical_or_expression ::=
-  logical_and_expression
-  | logical_or_expression:e {: RESULT = e; :} OROR logical_and_expression
-  ;
+assignment_expression ::= conditional_expression:e {: RESULT=e; :}
+ | unary_expression:t assignment_operator:o assignment_expression:v {: RESULT=new Absyn.Assignment(tleft,t,o,v); :}
+ ;
 
-/*3.3.15 conditional operatiors*/
-conditional_expression ::=
-  logical_or_expression
-  | logical_or_expression QUESTION expression COLON conditional_expression
-  ;
+assignment_operator ::= ASSIGN {: RESULT="="; :}
+ | MUL_ASSIGN {: RESULT="*="; :}
+ | DIV_ASSIGN {: RESULT="/="; :}
+ | MOD_ASSIGN {: RESULT="%="; :}
+ | ADD_ASSIGN {: RESULT="+="; :}
+ | SUB_ASSIGN {: RESULT="-="; :}
+ | LSHIFT_ASSIGN {: RESULT="<<="; :}
+ | RSHIFT_ASSIGN {: RESULT=">>="; :}
+ | AND_ASSIGN {: RESULT="&="; :}
+ | XOR_ASSIGN {: RESULT="^="; :}
+ | OR_ASSIGN {: RESULT="|="; :}
+ ;
 
- /*3.3.16 assign ment operatiors*/
- assignment_expression ::=
-    conditional_expression:e {: RESULT = e; :}
-    | unary_expression assignment_operator assignment_expression
-    ; 
+expression ::= assignment_expression:e {: RESULT=e; :}
+ | expression:l COMMA assignment_expression:r {: RESULT=new Absyn.CommaExp(lleft,l,r); :}
+ ;
 
-assignment_operator ::=
-  EQUALS 
-  | MUL_ASSIGN
-  | DIV_ASSIGN 
-  | MOD_ASSIGN
-  | ADD_ASSIGN
-  | SUB_ASSIGN
-  | LSHIFT_ASSIGN
-  | RSHIFT_ASSIGN
-  | AND_ASSIGN
-  | XOR_ASSIGN
-  | OR_ASSIGN
-  ;
-
-/*3.3.17 comma */
-expression ::= 
-  assignment_expression:e {: RESULT = e; :}
-  | expression COMMA assignment_expression
-  ;
-
-
-
-/*3.3.4 constant expressions*/
- constant_expression ::=
-    conditional_expression
-    ;
-
+constant_expression ::= conditional_expression:e {: RESULT=e; :} ;
 
 /* 3.6 statements*/
 statement ::=
@@ -329,78 +292,118 @@ statement ::=
       {: RESULT = s; :}
   ;
 
-/*3.6.1 labled statementts*/
-labeled_statement ::=
-  ID COLON statement
-  | CASE constant_expression COLON statement
-  | DEFAULT COLON statement
-  ;
-
-
-/*3.6.2 compound statemetn or block*/
-compound_statement ::=
-  LBRACE declaration_list statement_list RBRACE
-  | LBRACE declaration_list RBRACE
-  | LBRACE statement_list RBRACE
-  | LBRACE RBRACE
-  ;
-/* Simple C variable declaration */
-declaration ::=
-    INT_KEYWORD ID SEMICOLON
-  ;
-declaration_list ::=
-    declaration
-  | declaration_list declaration
-  ;
-statement_list ::=
-    statement:s
-      {: RESULT = new Absyn.StmtList(s, null); :}
-  | statement_list:list statement:s
-      {: RESULT = new Absyn.StmtList(s, list); :}
-  ;
-  
-expression_statement ::=
-    expression:e SEMICOLON
-      {: RESULT = new Absyn.ExprStmt(eleft, e); :}
-  | SEMICOLON:s
-      {: RESULT = new Absyn.ExprStmt(sleft, null); :}
-  ;
-
-
+/* C89 labels, blocks, declarations and expression statements */
+labeled_statement ::= ID:n COLON statement:s {: RESULT=new Absyn.LabelStmt(nleft,sym(n),s); :}
+ | CASE:c constant_expression:v COLON statement:s {: RESULT=new Absyn.CaseStmt(cleft,v,s); :}
+ | DEFAULT:d COLON statement:s {: RESULT=new Absyn.DefaultStmt(dleft,s); :}
+ ;
+compound_statement ::= LBRACE:b declaration_list:d statement_list:s RBRACE {: RESULT=new Absyn.CompoundStmt(bleft,d,s); :}
+ | LBRACE:b declaration_list:d RBRACE {: RESULT=new Absyn.CompoundStmt(bleft,d,null); :}
+ | LBRACE:b statement_list:s RBRACE {: RESULT=new Absyn.CompoundStmt(bleft,new java.util.LinkedList(),s); :}
+ | LBRACE:b RBRACE {: RESULT=new Absyn.CompoundStmt(bleft,new java.util.LinkedList(),null); :}
+ ;
+declaration ::= INT_KEYWORD ID:n SEMICOLON {: RESULT=new Absyn.CDeclaration(nleft,sym(n)); :}
+ | VAR:v bitfield_list:mods type:t name:n initialization:init SEMICOLON
+   {: RESULT=new Absyn.CDetailedDeclaration(vleft,"var",mods,t,n,init,null); :}
+ | FUN:f bitfield_list:mods type:t name:n parameters:params compound_statement:b
+   {: RESULT=new Absyn.CDetailedDeclaration(fleft,"fun",mods,t,n,null,params,b); :}
+ | FUN:f bitfield_list:mods type:t name:n type_parameters:params SEMICOLON
+   {: RESULT=new Absyn.CDetailedDeclaration(fleft,"prototype",mods,t,n,null,params); :}
+ | TYPEDEF:d type:t name:n SEMICOLON
+   {: RESULT=new Absyn.CDetailedDeclaration(dleft,"typedef",new java.util.LinkedList(),t,n,null,null); :}
+ | bitfield_list:mods struct_or_union:k name:n struct_or_union_declarator:fields
+   {: RESULT=new Absyn.CAggregateDeclaration(nleft,k,mods,n,fields); :}
+ | ENUM:e ID:n LBRACE enumerator_list:values RBRACE
+   {: RESULT=new Absyn.CEnumDeclaration(eleft,sym(n),values); :}
+ ;
+declaration_list ::= declaration:d {: java.util.LinkedList l=new java.util.LinkedList(); l.add(d); RESULT=l; :}
+ | declaration_list:l declaration:d {: l.add(d); RESULT=l; :}
+ ;
+statement_list ::= statement:s {: RESULT=new Absyn.StmtList(s,null); :}
+ | statement_list:l statement:s {: Absyn.StmtList node=l; while(node.tail!=null) node=node.tail; node.tail=new Absyn.StmtList(s,null); RESULT=l; :}
+ ;
+expression_statement ::= expression:e SEMICOLON {: RESULT=new Absyn.ExprStmt(eleft,e); :}
+ | SEMICOLON:s {: RESULT=new Absyn.ExprStmt(sleft,null); :}
+ ;
 /*3.6.4 selection statemetn*/
-selection_statement ::=
-  IF LPAREN expression RPAREN statement %prec LOWER_THAN_ELSE
-  | IF LPAREN expression RPAREN statement ELSE statement
-  | SWITCH LPAREN expression RPAREN statement
-  ;
-
+selection_statement ::= IF:i LPAREN expression:e RPAREN statement:t {: RESULT=new Absyn.IfStmt(ileft,e,t,null); :} %prec LOWER_THAN_ELSE
+ | IF:i LPAREN expression:e RPAREN statement:t ELSE statement:f {: RESULT=new Absyn.IfStmt(ileft,e,t,f); :}
+ | SWITCH:s LPAREN expression:e RPAREN statement:b {: RESULT=new Absyn.SwitchStmt(sleft,e,b); :}
+ ;
 /* 3.6.5 iteration statements*/
 
-iteration_statement ::=
-	  WHILE LPAREN expression RPAREN statement
-	| DO statement WHILE LPAREN expression RPAREN SEMICOLON
-	| FOR LPAREN expression SEMICOLON expression SEMICOLON expression RPAREN statement
-	| FOR LPAREN expression SEMICOLON expression SEMICOLON            RPAREN statement
-	| FOR LPAREN expression SEMICOLON            SEMICOLON expression RPAREN statement
-	| FOR LPAREN expression SEMICOLON            SEMICOLON            RPAREN statement
-	| FOR LPAREN            SEMICOLON expression SEMICOLON expression RPAREN statement
-	| FOR LPAREN            SEMICOLON expression SEMICOLON            RPAREN statement
-	| FOR LPAREN            SEMICOLON            SEMICOLON expression RPAREN statement
-	| FOR LPAREN            SEMICOLON            SEMICOLON            RPAREN statement
-	;
+iteration_statement ::= WHILE:w LPAREN expression:e RPAREN statement:b {: RESULT=new Absyn.WhileStmt(wleft,e,b); :}
+ | DO:d statement:b WHILE LPAREN expression:e RPAREN SEMICOLON {: RESULT=new Absyn.DoStmt(dleft,b,e); :}
+ | FOR:f LPAREN expression:i SEMICOLON expression:t SEMICOLON expression:u RPAREN statement:b {: RESULT=new Absyn.ForStmt(fleft,i,t,u,b); :}
+ | FOR:f LPAREN expression:i SEMICOLON expression:t SEMICOLON RPAREN statement:b {: RESULT=new Absyn.ForStmt(fleft,i,t,null,b); :}
+ | FOR:f LPAREN expression:i SEMICOLON SEMICOLON expression:u RPAREN statement:b {: RESULT=new Absyn.ForStmt(fleft,i,null,u,b); :}
+ | FOR:f LPAREN expression:i SEMICOLON SEMICOLON RPAREN statement:b {: RESULT=new Absyn.ForStmt(fleft,i,null,null,b); :}
+ | FOR:f LPAREN SEMICOLON expression:t SEMICOLON expression:u RPAREN statement:b {: RESULT=new Absyn.ForStmt(fleft,null,t,u,b); :}
+ | FOR:f LPAREN SEMICOLON expression:t SEMICOLON RPAREN statement:b {: RESULT=new Absyn.ForStmt(fleft,null,t,null,b); :}
+ | FOR:f LPAREN SEMICOLON SEMICOLON expression:u RPAREN statement:b {: RESULT=new Absyn.ForStmt(fleft,null,null,u,b); :}
+ | FOR:f LPAREN SEMICOLON SEMICOLON RPAREN statement:b {: RESULT=new Absyn.ForStmt(fleft,null,null,null,b); :}
+ ;
+jump_statement ::= GOTO:g ID:n SEMICOLON {: RESULT=new Absyn.GotoStmt(gleft,sym(n)); :}
+ | CONTINUE:c SEMICOLON {: RESULT=new Absyn.ContinueStmt(cleft); :}
+ | BREAK:b SEMICOLON {: RESULT=new Absyn.BreakStmt(bleft); :}
+ | RETURN:r expression:e SEMICOLON {: RESULT=new Absyn.ReturnStmt(rleft,e); :}
+ | RETURN:r SEMICOLON {: RESULT=new Absyn.ReturnStmt(rleft,null); :}
+ ;
 
-jump_statement ::=
-  GOTO ID SEMICOLON
-  | CONTINUE SEMICOLON
-  | BREAK SEMICOLON
-  | RETURN:r expression:e SEMICOLON {: RESULT = new Absyn.ReturnStmt(rleft, e); :}
-  |RETURN SEMICOLON
-  ;
-
+/* place holders needs to be taken out later*/
 
 
-  /* place holders needs to be taken out later*/
 
-
-  type_name ::= TYPENAME
-  ;
+name ::= ID:n {: RESULT=sym(n); :} ;
+bitfield_list ::= {: RESULT=new java.util.LinkedList(); :}
+ | bitfield_value:v bitfield_list:rest {: rest.addFirst(v); RESULT=rest; :} ;
+bitfield_value ::= CONST {: RESULT="const"; :} | VOLATILE {: RESULT="volatile"; :}
+ | EXTERN {: RESULT="extern"; :} | STATIC {: RESULT="static"; :}
+ | AUTO {: RESULT="auto"; :} | REGISTER {: RESULT="register"; :} ;
+type ::= type_name:n {: RESULT=new Absyn.CType(nleft,n,new java.util.LinkedList()); :}
+ | type_name:n type_augments:aug {: RESULT=new Absyn.CType(nleft,n,aug); :} ;
+type_augments ::= pointer_list:p {: RESULT=p; :}
+ | brackets_list:b {: RESULT=b; :}
+ | pointer_list:p brackets_list:b {: p.addAll(b); RESULT=p; :} ;
+pointer_list ::= TIMES:t {: java.util.LinkedList l=new java.util.LinkedList(); l.add("*"); RESULT=l; :}
+ | pointer_list:l TIMES {: l.add("*"); RESULT=l; :} ;
+brackets_list ::= empty_array_type_list:l {: RESULT=l; :}
+ | expression_array_type_list:l {: RESULT=l; :} ;
+empty_array_type_list ::= empty_array_type:a {: java.util.LinkedList l=new java.util.LinkedList(); l.add(a); RESULT=l; :}
+ | empty_array_type_list:l empty_array_type:a {: l.add(a); RESULT=l; :} ;
+empty_array_type ::= LBRACK:b RBRACK {: RESULT=new Absyn.CArrayDimension(bleft,null); :} ;
+expression_array_type_list ::= expression_array_type:a {: java.util.LinkedList l=new java.util.LinkedList(); l.add(a); RESULT=l; :}
+ | expression_array_type_list:l expression_array_type:a {: l.add(a); RESULT=l; :} ;
+expression_array_type ::= LBRACK:b constant_expression:e RBRACK {: RESULT=new Absyn.CArrayDimension(bleft,e); :} ;
+type_name ::= VOID {: RESULT="void"; :} | CHAR {: RESULT="char"; :}
+ | SHORT {: RESULT="short"; :} | INT_KEYWORD {: RESULT="int"; :}
+ | LONG {: RESULT="long"; :} | FLOAT {: RESULT="float"; :}
+ | DOUBLE {: RESULT="double"; :} | ENUM ID:n {: RESULT="enum "+n; :}
+ | ID:n {: RESULT=n; :} | TYPENAME {: RESULT="typename"; :} ;
+initialization ::= {: RESULT=null; :}
+ | ASSIGN:a initializer:i {: RESULT=i; :} ;
+initializer ::= assignment_expression:e {: RESULT=new Absyn.CInitializer(eleft,e,null); :}
+ | LBRACE:b initializer_list:l RBRACE {: RESULT=new Absyn.CInitializer(bleft,null,l); :} ;
+initializer_list ::= initializer:i {: java.util.LinkedList l=new java.util.LinkedList(); l.add(i); RESULT=l; :}
+ | initializer_list:l COMMA initializer:i {: l.add(i); RESULT=l; :} ;
+parameters ::= LPAREN:p RPAREN {: RESULT=new java.util.LinkedList(); :}
+ | LPAREN parameter_list:l RPAREN {: RESULT=l; :}
+ | LPAREN parameter_list:l COMMA ELIPSES RPAREN {: l.add("..."); RESULT=l; :} ;
+parameter_list ::= type:t name:n {: java.util.LinkedList l=new java.util.LinkedList(); l.add(new Absyn.CParameter(t.pos,t,n)); RESULT=l; :}
+ | parameter_list:l COMMA type:t name:n {: l.add(new Absyn.CParameter(t.pos,t,n)); RESULT=l; :} ;
+type_parameters ::= LPAREN RPAREN {: RESULT=new java.util.LinkedList(); :}
+ | LPAREN parameter_type_list:l RPAREN {: RESULT=l; :}
+ | LPAREN parameter_type_list:l COMMA ELIPSES RPAREN {: l.add("..."); RESULT=l; :} ;
+parameter_type_list ::= type:t {: java.util.LinkedList l=new java.util.LinkedList(); l.add(t); RESULT=l; :}
+ | parameter_type_list:l COMMA type:t {: l.add(t); RESULT=l; :} ;
+struct_or_union ::= STRUCT {: RESULT="struct"; :} | UNION {: RESULT="union"; :} ;
+struct_or_union_declarator ::= LBRACE:b struct_declaration_list:l RBRACE
+ {: RESULT=new Absyn.CFieldList(bleft,l); :} ;
+struct_declaration_list ::= type:t name:n SEMICOLON
+ {: java.util.LinkedList l=new java.util.LinkedList(); l.add(new Absyn.CParameter(t.pos,t,n)); RESULT=l; :}
+ | struct_declaration_list:l type:t name:n SEMICOLON
+ {: l.add(new Absyn.CParameter(t.pos,t,n)); RESULT=l; :} ;
+enumerator_list ::= enumerator:e {: java.util.LinkedList l=new java.util.LinkedList(); l.add(e); RESULT=l; :}
+ | enumerator_list:l COMMA enumerator:e {: l.add(e); RESULT=l; :} ;
+enumerator ::= ID:n {: RESULT=new Absyn.CEnumerator(nleft,sym(n),null); :}
+ | ID:n ASSIGN constant_expression:e {: RESULT=new Absyn.CEnumerator(nleft,sym(n),e); :} ;

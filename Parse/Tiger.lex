@@ -217,8 +217,8 @@ Yylex(java.io.InputStream s, ErrorMsg e) {
 <YYINITIAL> "=="  { return tok(sym.EQ); }
 <YYINITIAL> "!="  { return tok(sym.NEQ); }
 
-<YYINITIAL> "&&"  { return tok(sym.AND); }
-<YYINITIAL> "||"  { return tok(sym.OR); }
+<YYINITIAL> "&&"  { return tok(sym.ANDAND); }
+<YYINITIAL> "||"  { return tok(sym.OROR); }
 
 <YYINITIAL> "+"   { return tok(sym.PLUS); }
 <YYINITIAL> "-"   { return tok(sym.MINUS); }
