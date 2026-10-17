@@ -126,4 +126,3 @@ public class sym {
   static final int type_name = 24;
   static final int assignment_operator = 21;
 }
-
