@@ -340,8 +340,10 @@ statement_list ::=
 
 /*3.6.3 expression and null */
 expression_statement ::=
-  expression SEMICOLON
-  | SEMICOLON
+  expression:e SEMICOLON
+  {:RESULT = new Absyn.ExprStmt(eleft, e);:}
+  | SEMICOLON:s
+  {:RESULT=new Absyn.NullStmt(sleft);:}
   ;
 
 /*3.6.4 selection statement*/
