@@ -62,16 +62,21 @@ non terminal java.util.LinkedList declaration_list;
 non terminal Absyn.StmtList statement_list;
 
 non terminal Absyn.Exp opt_expression;
+
+non terminal Symbol.Symbol name;
+non terminal java.util.LinkedList bitfield_list;
+non terminal String bitfield_value;
+non terminal Absyn.Declaration declaration; /* i dont know whererther to use Declaration or Dec so if there is an issue try swaping*/
+
+
 /* statements (no actions yet) */
 
 
 
 /* course declaration grammar (no actions yet) */
 non terminal translation_unit;
-non terminal declaration;
-non terminal name;
-non terminal bitfield_list;
-non terminal bitfield_value;
+
+
 non terminal empty_array_type_list;
 non terminal empty_array_type;
 non terminal expression_array_type_list;
@@ -384,22 +389,40 @@ jump_statement ::=
 
 /* ---------- declarations (course grammar from Moodle) ---------- */
 declaration ::=
-  VAR bitfield_list type name initialization SEMICOLON
-  | FUN bitfield_list type name parameters compound_statement
-  | FUN bitfield_list type name type_parameters SEMICOLON
-  | TYPEDEF type name SEMICOLON
-  | bitfield_list struct_or_union name struct_or_union_declarator
-  | ENUM ID LBRACE enumerator_list RBRACE
+    VAR:v bitfield_list:b type:t name:n initialization:i SEMICOLON
+      {: RESULT = new Absyn.VarDecl(vleft, b, t, n, i); :}
+  | FUN:f bitfield_list:b type:t name:n parameters:p compound_statement:body
+      {: RESULT = new Absyn.FunDecl(fleft, b, t, n, p, body); :}
+  | FUN:f bitfield_list:b type:t name:n type_parameters:p SEMICOLON
+      {: RESULT = new Absyn.FunDecl(fleft, b, t, n, p, null); :}
+  | TYPEDEF:d type:t name:n SEMICOLON
+      {: RESULT = new Absyn.TypedefDecl(dleft, t, n); :}
+  | bitfield_list:b struct_or_union:u name:n struct_or_union_declarator:f
+      {: RESULT = new Absyn.StructDecl(uleft, b, u.booleanValue(), n, f); :}
+  | ENUM:e ID:id LBRACE enumerator_list:l RBRACE
+      {: RESULT = new Absyn.EnumDecl(eleft, sym(id), l); :}
   ;
 
-name ::= ID ;
+name ::= ID:n
+{:RESULT= sym(n);:}
+ ;
 
 bitfield_list ::=
   /* empty */
-  | bitfield_value bitfield_list
+  {:RESULT=new java.util.LinkedList();:}
+  | bitfield_value:v bitfield_list:l
+  {: l.addFirst(v); RESULT =l;:}
+
   ;
 
-bitfield_value ::= CONST | VOLATILE | EXTERN | STATIC | AUTO | REGISTER ;
+bitfield_value ::= 
+  CONST {:RESULT = "const";:}
+ | VOLATILE {:RESULT= "volatile";:}
+  | EXTERN {:RESULT= "extern";:}
+  | STATIC {:RESULT= "static";:}
+   | AUTO{:RESULT= "auto";:}
+   | REGISTER {:RESULT="register";:}
+   ;
 
 empty_array_type_list ::=
   empty_array_type
