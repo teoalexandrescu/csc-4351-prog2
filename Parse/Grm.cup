@@ -347,9 +347,14 @@ expression_statement ::=
   ;
 
 /*3.6.4 selection statement*/
+
+/*3.6.4 selection statemetn*/
 selection_statement ::=
-  IF LPAREN expression RPAREN statement %prec LOWER_THAN_ELSE
-  | IF LPAREN expression RPAREN statement ELSE statement
+    IF:i LPAREN expression:c RPAREN statement:t
+      {: RESULT = new Absyn.IfStmt(ileft, c, t, null); :}
+      %prec LOWER_THAN_ELSE
+  | IF:i LPAREN expression:c RPAREN statement:t ELSE statement:f
+      {: RESULT = new Absyn.IfStmt(ileft, c, t, f); :}
   ;
 
 /* 3.6.5 iteration statements*/
