@@ -156,9 +156,7 @@ Yylex(java.io.InputStream s, ErrorMsg e) {
 <YYINITIAL> "break"     { return tok(sym.BREAK); }
 <YYINITIAL> "else"      { return tok(sym.ELSE); }
 <YYINITIAL> "long"      { return tok(sym.LONG); }
-<YYINITIAL> "switch"    { return tok(sym.SWITCH); }
 
-<YYINITIAL> "case"      { return tok(sym.CASE); }
 <YYINITIAL> "enum"      { return tok(sym.ENUM); }
 <YYINITIAL> "register"  { return tok(sym.REGISTER); }
 <YYINITIAL> "typedef"   { return tok(sym.TYPEDEF); }
@@ -178,7 +176,6 @@ Yylex(java.io.InputStream s, ErrorMsg e) {
 <YYINITIAL> "signed"    { return tok(sym.SIGNED); }
 <YYINITIAL> "void"      { return tok(sym.VOID); }
 
-<YYINITIAL> "default"   { return tok(sym.DEFAULT); }
 <YYINITIAL> "goto"      { return tok(sym.GOTO); }
 <YYINITIAL> "sizeof"    { return tok(sym.SIZEOF); }
 <YYINITIAL> "volatile"  { return tok(sym.VOLATILE); }

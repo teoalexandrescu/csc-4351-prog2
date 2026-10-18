@@ -67,10 +67,10 @@ terminal COMMA, COLON, SEMICOLON, LPAREN, RPAREN, LBRACK, RBRACK,
           LSHIFT_ASSIGN, RSHIFT_ASSIGN, AND_ASSIGN, XOR_ASSIGN, OR_ASSIGN;
 
 /*3.6.1*/
-terminal CASE, DEFAULT;
+
 
 /* C token 3.6.4*/
-terminal SWITCH;
+
 terminal LOWER_THAN_ELSE;
 
 /* token for 3.6.6*/
@@ -293,10 +293,10 @@ statement ::=
   ;
 
 /* C89 labels, blocks, declarations and expression statements */
-labeled_statement ::= ID:n COLON statement:s {: RESULT=new Absyn.LabelStmt(nleft,sym(n),s); :}
- | CASE:c constant_expression:v COLON statement:s {: RESULT=new Absyn.CaseStmt(cleft,v,s); :}
- | DEFAULT:d COLON statement:s {: RESULT=new Absyn.DefaultStmt(dleft,s); :}
- ;
+labeled_statement ::=
+    ID:n COLON statement:s
+    {: RESULT=new Absyn.LabelStmt(nleft,sym(n),s); :}
+    ;
 compound_statement ::= LBRACE:b declaration_list:d statement_list:s RBRACE {: RESULT=new Absyn.CompoundStmt(bleft,d,s); :}
  | LBRACE:b declaration_list:d RBRACE {: RESULT=new Absyn.CompoundStmt(bleft,d,null); :}
  | LBRACE:b statement_list:s RBRACE {: RESULT=new Absyn.CompoundStmt(bleft,new java.util.LinkedList(),s); :}
@@ -338,10 +338,14 @@ expression_statement ::= expression:e SEMICOLON {: RESULT=new Absyn.ExprStmt(ele
  | SEMICOLON:s {: RESULT=new Absyn.NullStmt(sleft); :}
  ;
 /*3.6.4 selection statemetn*/
-selection_statement ::= IF:i LPAREN expression:e RPAREN statement:t {: RESULT=new Absyn.IfStmt(ileft,e,t,null); :} %prec LOWER_THAN_ELSE
- | IF:i LPAREN expression:e RPAREN statement:t ELSE statement:f {: RESULT=new Absyn.IfStmt(ileft,e,t,f); :}
- | SWITCH:s LPAREN expression:e RPAREN statement:b {: RESULT=new Absyn.SwitchStmt(sleft,e,b); :}
- ;
+selection_statement ::=
+    IF:i LPAREN expression:e RPAREN statement:t
+    {: RESULT=new Absyn.IfStmt(ileft,e,t,null); :}
+    %prec LOWER_THAN_ELSE
+
+  | IF:i LPAREN expression:e RPAREN statement:t ELSE statement:f
+    {: RESULT=new Absyn.IfStmt(ileft,e,t,f); :}
+    ;
 /* 3.6.5 iteration statements*/
 
 iteration_statement ::= WHILE:w LPAREN expression:e RPAREN statement:b {: RESULT=new Absyn.WhileStmt(wleft,e,b); :}
