@@ -763,7 +763,7 @@ private int [][] unpackFromString(int size1, int size2, String st)
 					case -37:
 						break;
 					case 37:
-						{ return tok(sym.AND); }
+						{ return tok(sym.ANDAND); }
 					case -38:
 						break;
 					case 38:
@@ -839,7 +839,7 @@ private int [][] unpackFromString(int size1, int size2, String st)
 					case -56:
 						break;
 					case 56:
-						{ return tok(sym.OR); }
+						{ return tok(sym.OROR); }
 					case -57:
 						break;
 					case 57:

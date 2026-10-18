@@ -302,9 +302,21 @@ compound_statement ::= LBRACE:b declaration_list:d statement_list:s RBRACE {: RE
  | LBRACE:b statement_list:s RBRACE {: RESULT=new Absyn.CompoundStmt(bleft,new java.util.LinkedList(),s); :}
  | LBRACE:b RBRACE {: RESULT=new Absyn.CompoundStmt(bleft,new java.util.LinkedList(),null); :}
  ;
-declaration ::= INT_KEYWORD ID:n SEMICOLON {: RESULT=new Absyn.CDeclaration(nleft,sym(n)); :}
- | VAR:v bitfield_list:mods type:t name:n initialization:init SEMICOLON
-   {: RESULT=new Absyn.CDetailedDeclaration(vleft,"var",mods,t,n,init,null); :}
+declaration ::= INT_KEYWORD ID:n initialization:i SEMICOLON 
+{: RESULT = new Absyn.CDetailedDeclaration(
+    nleft, "var", new java.util.LinkedList(),
+    new Absyn.CType(nleft, "int", new java.util.LinkedList()),
+    sym(n), i, null); :}
+
+| INT_KEYWORD ID:arrayName brackets_list:d initialization:arrayInit SEMICOLON
+  {: RESULT = new Absyn.CDetailedDeclaration(
+       arrayNameleft, "var", new java.util.LinkedList(),
+       new Absyn.CType(arrayNameleft, "int", d),
+       sym(arrayName), arrayInit, null);
+  :}
+
+ | VAR:v bitfield_list:mods type:t name:n initialization:initval SEMICOLON
+   {: RESULT=new Absyn.CDetailedDeclaration(vleft,"var",mods,t,n,initval,null); :}
  | FUN:f bitfield_list:mods type:t name:n parameters:params compound_statement:b
    {: RESULT=new Absyn.CDetailedDeclaration(fleft,"fun",mods,t,n,null,params,b); :}
  | FUN:f bitfield_list:mods type:t name:n type_parameters:params SEMICOLON
