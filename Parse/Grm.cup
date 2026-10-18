@@ -58,9 +58,10 @@ non terminal Absyn.Stmt statement,
             jump_statement;
 
 non terminal java.util.LinkedList declaration_list;
+
 non terminal Absyn.StmtList statement_list;
 
-
+non terminal Absyn.Exp opt_expression;
 /* statements (no actions yet) */
 
 
@@ -359,25 +360,26 @@ selection_statement ::=
 
 /* 3.6.5 iteration statements*/
 iteration_statement ::=
-	  WHILE LPAREN expression RPAREN statement
-	| DO statement WHILE LPAREN expression RPAREN SEMICOLON
-	| FOR LPAREN expression SEMICOLON expression SEMICOLON expression RPAREN statement
-	| FOR LPAREN expression SEMICOLON expression SEMICOLON            RPAREN statement
-	| FOR LPAREN expression SEMICOLON            SEMICOLON expression RPAREN statement
-	| FOR LPAREN expression SEMICOLON            SEMICOLON            RPAREN statement
-	| FOR LPAREN            SEMICOLON expression SEMICOLON expression RPAREN statement
-	| FOR LPAREN            SEMICOLON expression SEMICOLON            RPAREN statement
-	| FOR LPAREN            SEMICOLON            SEMICOLON expression RPAREN statement
-	| FOR LPAREN            SEMICOLON            SEMICOLON            RPAREN statement
-	;
+    WHILE:w LPAREN expression:c RPAREN statement:s
+      {: RESULT = new Absyn.WhileStmt(wleft, c, s); :}
+  | DO:d statement:s WHILE LPAREN expression:c RPAREN SEMICOLON
+      {: RESULT = new Absyn.DoStmt(dleft, s, c); :}
+  | FOR:f LPAREN opt_expression:i SEMICOLON opt_expression:c SEMICOLON
+      opt_expression:u RPAREN statement:s
+      {: RESULT = new Absyn.ForStmt(fleft, i, c, u, s); :}
+  ;
 
-/*3.6.6 jump statements*/
 jump_statement ::=
-  GOTO ID SEMICOLON
-  | CONTINUE SEMICOLON
-  | BREAK SEMICOLON
-  | RETURN expression SEMICOLON
-  | RETURN SEMICOLON
+    GOTO:g ID:id SEMICOLON
+      {: RESULT = new Absyn.GotoStmt(gleft, sym(id)); :}
+  | CONTINUE:c SEMICOLON
+      {: RESULT = new Absyn.ContinueStmt(cleft); :}
+  | BREAK:b SEMICOLON
+      {: RESULT = new Absyn.BreakStmt(bleft); :}
+  | RETURN:r expression:e SEMICOLON
+      {: RESULT = new Absyn.ReturnStmt(rleft, e); :}
+  | RETURN:r SEMICOLON
+      {: RESULT = new Absyn.ReturnStmt(rleft, null); :}
   ;
 
 /* ---------- declarations (course grammar from Moodle) ---------- */
