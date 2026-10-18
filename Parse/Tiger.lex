@@ -150,7 +150,7 @@ Yylex(java.io.InputStream s, ErrorMsg e) {
 <YYINITIAL> ","	{return tok(sym.COMMA, null);}
 <YYINITIAL> "auto"      { return tok(sym.AUTO); }
 <YYINITIAL> "double"    { return tok(sym.DOUBLE); }
-<YYINITIAL> "int"       { return tok(sym.INT); }
+<YYINITIAL> "int" { return tok(sym.INT_KEYWORD); }
 <YYINITIAL> "struct"    { return tok(sym.STRUCT); }
 
 <YYINITIAL> "break"     { return tok(sym.BREAK); }
@@ -192,22 +192,22 @@ Yylex(java.io.InputStream s, ErrorMsg e) {
 <YYINITIAL> "fun"       { return tok(sym.FUN); }
 
 <YYINITIAL> [a-zA-Z_][a-zA-Z0-9_]*    { return tok(sym.ID, yytext()); }
-<YYINITIAL> "++"  { return tok(sym.INCREMENT); }
-<YYINITIAL> "--"  { return tok(sym.DECREMENT); }
+<YYINITIAL> "++"  { return tok(sym.INCR); }
+<YYINITIAL> "--"  { return tok(sym.DECR); }
 <YYINITIAL> "->"  { return tok(sym.ARROW); }
 
-<YYINITIAL> "<<=" { return tok(sym.LSHIFTASSIGN); }
-<YYINITIAL> ">>=" { return tok(sym.RSHIFTASSIGN); }
+<YYINITIAL> "<<=" { return tok(sym.LSHIFT_ASSIGN); }
+<YYINITIAL> ">>=" { return tok(sym.RSHIFT_ASSIGN); }
 
-<YYINITIAL> "+="  { return tok(sym.ADDASSIGN); }
-<YYINITIAL> "-="  { return tok(sym.SUBASSIGN); }
-<YYINITIAL> "*="  { return tok(sym.MULASSIGN); }
-<YYINITIAL> "/="  { return tok(sym.DIVASSIGN); }
-<YYINITIAL> "%="  { return tok(sym.MODASSIGN); }
+<YYINITIAL> "+="  { return tok(sym.ADD_ASSIGN); }
+<YYINITIAL> "-="  { return tok(sym.SUB_ASSIGN); }
+<YYINITIAL> "*="  { return tok(sym.MUL_ASSIGN); }
+<YYINITIAL> "/="  { return tok(sym.DIV_ASSIGN); }
+<YYINITIAL> "%="  { return tok(sym.MOD_ASSIGN); }
 
-<YYINITIAL> "&="  { return tok(sym.BWISEANDASSIGN); }
-<YYINITIAL> "^="  { return tok(sym.BWISEXORASSIGN); }
-<YYINITIAL> "|="  { return tok(sym.BWISEORASSIGN); }
+<YYINITIAL> "&="  { return tok(sym.AND_ASSIGN); }
+<YYINITIAL> "^="  { return tok(sym.XOR_ASSIGN); }
+<YYINITIAL> "|="  { return tok(sym.OR_ASSIGN); }
 
 <YYINITIAL> "<<"  { return tok(sym.LSHIFT); }
 <YYINITIAL> ">>"  { return tok(sym.RSHIFT); }
@@ -217,26 +217,26 @@ Yylex(java.io.InputStream s, ErrorMsg e) {
 <YYINITIAL> "=="  { return tok(sym.EQ); }
 <YYINITIAL> "!="  { return tok(sym.NEQ); }
 
-<YYINITIAL> "&&"  { return tok(sym.AND); }
-<YYINITIAL> "||"  { return tok(sym.OR); }
+<YYINITIAL> "&&"  { return tok(sym.ANDAND); }
+<YYINITIAL> "||"  { return tok(sym.OROR); }
 
 <YYINITIAL> "+"   { return tok(sym.PLUS); }
 <YYINITIAL> "-"   { return tok(sym.MINUS); }
 <YYINITIAL> "*"   { return tok(sym.TIMES); }
 <YYINITIAL> "/"   { return tok(sym.DIVIDE); }
-<YYINITIAL> "%"   { return tok(sym.MODULUS); }
+<YYINITIAL> "%"   { return tok(sym.MOD); }
 
 <YYINITIAL> "="   { return tok(sym.ASSIGN); }
 
 <YYINITIAL> "<"   { return tok(sym.LT); }
 <YYINITIAL> ">"   { return tok(sym.GT); }
 
-<YYINITIAL> "&"   { return tok(sym.BITWISEAND); }
-<YYINITIAL> "|"   { return tok(sym.BWISEOR); }
-<YYINITIAL> "^"   { return tok(sym.BWISEXOR); }
+<YYINITIAL> "&"   { return tok(sym.AMP); }
+<YYINITIAL> "|"   { return tok(sym.PIPE); }
+<YYINITIAL> "^"   { return tok(sym.CARET); }
 
 <YYINITIAL> "~"   { return tok(sym.TILDE); }
-<YYINITIAL> "!"   { return tok(sym.NOT); }
+<YYINITIAL> "!"   { return tok(sym.BANG); }
 <YYINITIAL> "?"   { return tok(sym.QUESTION); }
 
 
@@ -253,7 +253,7 @@ Yylex(java.io.InputStream s, ErrorMsg e) {
 <YYINITIAL> ":"   { return tok(sym.COLON); }
 
 <YYINITIAL> \.\.\. { return tok(sym.ELIPSES); }
-<YYINITIAL> \.      { return tok(sym.PERIOD); }
+<YYINITIAL> \.      { return tok(sym.DOT); }
 
 
 

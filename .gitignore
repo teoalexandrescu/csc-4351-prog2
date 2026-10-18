@@ -1,5 +1,8 @@
+
+# Compiled Java files
 *.class
+Parse/Grm.err
+Parse/Grm.out
 Parse/Grm.java
 Parse/Yylex.java
-Parse/Grm.out
-Parse/Grm.err
+Parse/sym.java
