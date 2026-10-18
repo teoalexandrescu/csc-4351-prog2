@@ -61,7 +61,14 @@ loops, and return statements.
 - Does not compile or execute C programs.
 - Does not perform semantic analysis or type checking.
 - Some grammar rules may not support every valid C89 construct.
+## Parsing Conflicts and Error Recovery
 
+Java CUP reports 0 parsing conflicts, so no unresolved
+shift/reduce or reduce/reduce conflicts remain.
+
+The grammar includes an error production, but comprehensive
+error recovery has not been verified. Invalid input may
+therefore terminate parsing without recovering.
 ## AI Usage
 AI was used to assist with merging team members' Git branches, understanding the changes and contributions made in each branch,
 resolving integration issues, and troubleshooting build errors.
