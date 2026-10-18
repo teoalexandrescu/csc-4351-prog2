@@ -335,7 +335,7 @@ statement_list ::= statement:s {: RESULT=new Absyn.StmtList(s,null); :}
  | statement_list:l statement:s {: Absyn.StmtList node=l; while(node.tail!=null) node=node.tail; node.tail=new Absyn.StmtList(s,null); RESULT=l; :}
  ;
 expression_statement ::= expression:e SEMICOLON {: RESULT=new Absyn.ExprStmt(eleft,e); :}
- | SEMICOLON:s {: RESULT=new Absyn.ExprStmt(sleft,null); :}
+ | SEMICOLON:s {: RESULT=new Absyn.NullStmt(sleft); :}
  ;
 /*3.6.4 selection statemetn*/
 selection_statement ::= IF:i LPAREN expression:e RPAREN statement:t {: RESULT=new Absyn.IfStmt(ileft,e,t,null); :} %prec LOWER_THAN_ELSE
