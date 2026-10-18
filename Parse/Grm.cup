@@ -71,33 +71,49 @@ non terminal selection_statement;
 non terminal iteration_statement;
 non terminal jump_statement;
 
+
 /* course declaration grammar */
-non terminal translation_unit;
-non terminal declaration;
-non terminal name;
-non terminal bitfield_list;
-non terminal bitfield_value;
-non terminal empty_array_type_list;
-non terminal empty_array_type;
-non terminal expression_array_type_list;
-non terminal expression_array_type;
-non terminal type;
-non terminal type_augments;
-non terminal brackets_list;
-non terminal pointer_list;
-non terminal type_name;
-non terminal initialization;
-non terminal struct_or_union_declarator;
-non terminal enumerator_list;
-non terminal enumerator;
-non terminal struct_declaration_list;
-non terminal struct_or_union;
-non terminal type_parameters;
-non terminal parameters;
-non terminal parameter_list;
-non terminal parameter_type_list;
-non terminal initializer_list;
-non terminal initializer;
+
+non terminal Absyn.Program translation_unit;
+non terminal Absyn.Absyn declaration;
+
+non terminal Symbol.Symbol name;
+
+non terminal java.util.LinkedList bitfield_list;
+non terminal String bitfield_value;
+
+non terminal java.util.LinkedList empty_array_type_list;
+non terminal Absyn.CArrayDimension empty_array_type;
+
+non terminal java.util.LinkedList expression_array_type_list;
+non terminal Absyn.CArrayDimension expression_array_type;
+
+non terminal Absyn.CType type;
+
+non terminal java.util.LinkedList type_augments;
+non terminal java.util.LinkedList brackets_list;
+non terminal java.util.LinkedList pointer_list;
+
+non terminal String type_name;
+
+non terminal Absyn.CInitializer initialization;
+
+non terminal Absyn.Exp struct_or_union_declarator;
+
+non terminal java.util.LinkedList enumerator_list;
+non terminal Absyn.CEnumerator enumerator;
+
+non terminal java.util.LinkedList struct_declaration_list;
+non terminal String struct_or_union;
+
+non terminal java.util.LinkedList type_parameters;
+non terminal java.util.LinkedList parameters;
+non terminal java.util.LinkedList parameter_list;
+non terminal java.util.LinkedList parameter_type_list;
+
+non terminal java.util.LinkedList initializer_list;
+non terminal Absyn.CInitializer initializer;
+
 
 precedence nonassoc LOWER_THAN_ELSE;
 precedence nonassoc ELSE;
@@ -333,15 +349,42 @@ jump_statement ::=
 
 /* ---------- declarations (course grammar from Moodle) ---------- */
 declaration ::=
-  VAR bitfield_list type name initialization SEMICOLON
-  | FUN bitfield_list type name parameters compound_statement
-  | FUN bitfield_list type name type_parameters SEMICOLON
-  | TYPEDEF type name SEMICOLON
-  | bitfield_list struct_or_union name struct_or_union_declarator
-  | ENUM ID LBRACE enumerator_list RBRACE
-  ;
+  
+/* ---------- declarations (course grammar from Moodle) ---------- */
+declaration ::=
+    VAR:v bitfield_list:mods type:t name:n initialization:init SEMICOLON
+    {: RESULT = new Absyn.CDetailedDeclaration(
+        vleft, "var", mods, t, n, init, null
+    ); :}
 
-name ::= ID ;
+  | FUN:f bitfield_list:mods type:t name:n parameters:params compound_statement:b
+    {: RESULT = new Absyn.CDetailedDeclaration(
+        fleft, "fun", mods, t, n, null, params, b
+    ); :}
+
+  | FUN:f bitfield_list:mods type:t name:n type_parameters:params SEMICOLON
+    {: RESULT = new Absyn.CDetailedDeclaration(
+        fleft, "prototype", mods, t, n, null, params
+    ); :}
+
+  | TYPEDEF:d type:t name:n SEMICOLON
+    {: RESULT = new Absyn.CDetailedDeclaration(
+        dleft, "typedef", new java.util.LinkedList(), t, n, null, null
+    ); :}
+
+  | bitfield_list:mods struct_or_union:k name:n struct_or_union_declarator:fields
+    {: RESULT = new Absyn.CAggregateDeclaration(
+        nleft, k, mods, n, fields
+    ); :}
+
+  | ENUM:e ID:n LBRACE enumerator_list:values RBRACE
+    {: RESULT = new Absyn.CEnumDeclaration(
+        eleft, sym(n), values
+    ); :}
+  ;
+name ::= ID name
+{: RESULT = sym(n); :}
+;
 
 bitfield_list ::=
   /* empty */
